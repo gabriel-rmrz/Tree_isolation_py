@@ -1,0 +1,55 @@
+# Create the input structure containing the parameters defining the
+# filtering and cover genration process
+
+
+## Filtering parameters
+## Restrict the plot size (optional):
+# Restricts the point cloud by defining its boundary and removing the
+# points outside the boundary. The boundary can be given as the radius of
+# an origo-centered circular plot or as the (x,y)-coordinates of the vertices
+# of a polygon.
+# "bound" = plot boundary (radius (m) or matrix of polygon vertices)
+# Does the restriction if bound > 0, otherwise no restriction
+
+inputs:
+  bound: [
+    [1000]
+  ]
+  #bound = [10 10; -10 10; -10 -10; 10 -10]; example of square plot boundary
+  SamplingCubeSize: 0.005
+  ## Remove bottom (ground) layer (optional):
+  # Partitions the bottom three meters in to squares of given side lengths
+  # and for each square removes all bottom points below given height if the
+  # third meter above the ground (2-3 m) is empty of points.
+  # "BottomSquare" = side length of squares (m) for removing the bottom
+  # "BottomHeight" = heigth of the bottom layer to be removed
+  # if "BottomSquare" > 0, then removes the bottom layer, otherwise not
+  BottomSquare: 0.5
+  BottomHeight: 0.25
+  ## Low point density filtering (optional):
+  # "Voxelize" the points into cubes and if a cube has less than the
+  # minimum acceptable number of points, then removes the points of the cube.
+  # "CubeSizeDensity" = size length (m) of the cubes for low density filtering
+  # "PointDensity" = minimum acceptable number of points in the cubes
+  # Does the filtering if CubeSizeDensity > 0, otherwise no filtering
+  CubeSizeDensity: 0.03
+  PointDensity: 3
+  ## Remove small separate clusters (optional):
+  # Covers the point cloud with sets and defines their connected components
+  # and if a component has less than the minimum acceptable number of sets,
+  # then the points in that component are removed.
+  # Does the filtering if PatchDiam > 0, otherwise no filtering.
+  filt:
+    PatchDiam: 0
+    BallRad: 0.3
+    nmin: 3
+    NCubes: 10
+  FiltClusterSize: 3
+  ## Compute the height of the points (not optional):
+  # "HeightSquare" = side length of squares (m) for definition of the ground level
+  HeightSquare: 3
+  # Cover generation parameters
+  PatchDiam: 0.06 # Minimum distance between centers of cover sets, i.e. the minimum diameter of a cover set
+  BallRad: 0.08 # Ball radius used to generate the cover sets, these balls are also used to determine the neighbors
+  nmin: 3 # Minimum number of points in BallRad-balls
+  NCubes: 500 # Scalar, number of BallRad-cubes forming the side Scalar, number of BallRad-cubes forming the side cloud 
