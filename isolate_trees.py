@@ -66,6 +66,7 @@ def isolate_trees(P, Hei=None, cover=None):
   #print(f"len(cover.center): {len(cover['center'])}")
   #print(f"len(cover.neighbor): {len(cover['neighbor'])}")
   #print(sum(Sec))
+  exit()
 
   StemSec, CompSize = connected_components(cover['neighbor'], Sec, 25)
   print(StemSec)

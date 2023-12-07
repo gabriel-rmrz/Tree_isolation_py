@@ -62,42 +62,45 @@ def connected_components(Nei,Sub,MinSize,Fal=-1):
   if (len(Sub)<=3) and not isinstance(Sub[0], (np.bool_, bool)) and (Sub[0] > 0) :
     n = len(Sub)
     if n == 1:
-      Components[1] = int(Sub)
+      Components[1] = np.array(int(Sub))
       CompSize = [1]
+      return Components, CompSize
     elif n == 2:
       I = Nei[Sub[0]] == Sub[1]
-      if sum(I):
-        Components[1] = int(Sub)
+      if np.any(I):
+        Components[1] = np.array(int(Sub))
         CompSize = [2]
       else:
-        Components[1] = int(Sub[0])
-        Components[2] = int(Sub[1])
+        Components[1] = np.array(int(Sub[0]))
+        Components[2] = np.array(int(Sub[1]))
         CompSize = [1, 1]
-    elif n == 2:
+      return Components, CompSize
+    elif n == 3:
       I = Nei[Sub[0]] == Sub[1]
       J = Nei[Sub[0]] == Sub[2]
       K = Nei[Sub[1]] == Sub[2]
-      if sum(I) + sum(J) + sum(K) >= 2:
-        Components[1] = int(Sub)
+      if np.any(I) + np.any(J) + np.any(K) >= 2:
+        Components[1] = np.array(int(Sub))
         CompSize[3]
-      elif sum(I):
-        Components[1] = int(Sub[:2])
-        Components[2] = int(Sub[2])
+      elif any(I):
+        Components[1] = np.asarray(int(Sub[:2]))
+        Components[2] = np.array(int(Sub[2]))
         CompSize = [2, 1]
       elif sum(J):
-        Components[1] = int(Sub[[0,2]])
-        Components[2] = int(Sub[1])
+        Components[1] = np.asarray(int(Sub[[0,2]]))
+        Components[2] = np.array(int(Sub[1]))
         CompSize = [2, 1]
       elif sum(K):
-        Components[1] = int(Sub[[1,2]])
-        Components[2] = int(Sub[0])
+        Components[1] = np.array(int(Sub[[1,2]]))
+        Components[2] = np.array(int(Sub[0]))
         CompSize = [2, 1]
       else:
-        Components[1] = int(Sub[0])
-        Components[2] = int(Sub[1])
-        Components[3] = int(Sub[2])
+        Components[1] = np.array(int(Sub[0]))
+        Components[2] = np.array(int(Sub[1]))
+        Components[3] = np.array(int(Sub[2]))
         CompSize = [1, 1, 1]
-  elif sum(Sub) or (len(Sub) == 1 and Sub[0] == 0):
+      return Components, CompSize
+  elif np.any(Sub) or (len(Sub) == 1 and Sub[0] == 0):
     numB = len(Nei)
     numS = []
     if Fal_i == -1:
@@ -120,7 +123,7 @@ def connected_components(Nei,Sub,MinSize,Fal=-1):
       Sub = sub
     else:
       # Subset of cover sets
-      numS = len(Sub[Sub])
+      numS = np.count_nonzero(Sub)
 
 
     CompSize = np.zeros(numS, dtype=int)
@@ -133,19 +136,25 @@ def connected_components(Nei,Sub,MinSize,Fal=-1):
 
     while i < numS and m <= numB:
       Add = Nei[m]
-      I = Sub[Add-1]
+      I = Sub[Add]
+      Add = Add[I]
       a = len(Add)
       Comp[0] = m
       Sub[m-1] = False
       t = 1
       while a>0:
+        print(f"len(Add): {len(Add)}")
+        print(f"len(Comp[t:t+a]): {len(Comp[t:t+a])}")
         Comp[t:t+a] = Add
         Sub[Add-1] = False
-        t = t+a
+        t += a
+        '''
         Add_temp = []
         for i in Add:
           Add_temp = np.concatenate((Add_temp, Nei[i]), axis=0) 
         Add = np.asarray(Add_temp).astype(int)
+        '''
+        Add = np.concatenate([Nei[a] for a in Add])
         print(f"Add: {Add}")
         I = Sub[Add]
         Add = Add[I]
@@ -153,31 +162,31 @@ def connected_components(Nei,Sub,MinSize,Fal=-1):
         if n > 2:
           I = np.ones(n, dtype='bool')
           for j in range(1,n+1):
-            if ~Fal[Add[j-1]-1]:
-              Fal[Add[j-1]-1] = True
+            if not Fal[Add[j-1]]:
+              Fal[Add[j-1]] = True
             else:
               I[j-1] = False
-          Fal[Add-1] = False
-          Add = Add[I]
+          Fal[Add] = False
+          Add = Add[I] 
         elif n == 2:
           if Add[0] == Add[1]:
             Add = Add[0]
         a = len(Add)
-      i = i +t
+      i += t
       if t>= MinSize:
+        numC += 1
+        print("#######################")
+        print(f"Comp[:t]: {Comp[:t]}")
         print(f"Comp: {Comp}")
-        numC = numC +1
-        print(Comp[:t+1])
-        print(Comp)
-        print(Components)
-        print(CompSize)
-        Components[numC] = int(Comp[:t])
-        CompSize[numC] = t
+        print(f"Components: {Components}")
+        print(f"CompSize): {CompSize}")
+        Components[numC] = np.array(Comp[:t])
+        CompSize[numC-1] = t
         print(Components)
         print(CompSize)
       if i < numS:
         while m <= numB and Sub[m-1] == False:
-          m = m + 1
+          m += 1
     print(Components)
     print(CompSize)
     CompSize = CompSize[:numC]

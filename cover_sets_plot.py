@@ -1,10 +1,9 @@
-DEBUG=False
+DEBUG=True
 import time
-import math
 import numpy as np
-import pandas as pd
-import awkward as awk
-import scipy.io
+#import pandas as pd
+#import awkward as awk
+#import scipy.io
 from collections import defaultdict
 from tools.neighbor_distances import neighbor_distances
 from ploting.plot_point_cloud import plot_point_cloud
@@ -78,18 +77,16 @@ def cover_sets_plot(P,inputs):
 
   if DEBUG:
     plot_point_cloud(P)
-    exit()
   
-
 
   i_time = time.time()
   numP = len(P[:,0])
   #print(numP)
-  Ball = {}
+  Ball = defaultdict(list) 
   # large balls, used to generate the cover sets and their neighbors:
   Cen = np.zeros(int(1e6), dtype=np.uint32) # the center points of the balls/cover sets
   BoP = np.zeros(numP, dtype=np.uint32) # the balls/cover sets the points belong
-  Ind = np.arange(numP)
+  Ind = np.arange(1, numP+1, dtype=np.int32)
   NotExa = np.ones(numP) # Points not yet examined
   Dist = float(1e8) * np.ones(numP, dtype=np.float64) # Distance of point to the closest center
   numB = 0 # Number of sets generated
@@ -103,22 +100,18 @@ def cover_sets_plot(P,inputs):
 
 
   #CC = P[['x','y','z']]
-  Min = P.min(axis=0).astype(float) # Minimum coordinates
-  Max = P.max(axis=0).astype(float) # Maximum coordinates
+  Min = P.min(axis=0) # Minimum coordinates
+  Max = P.max(axis=0) # Maximum coordinates
   
 
-  CC = (np.floor(((P.astype(float)-Min)/inputs['BallRad'])) + 2).astype(int)
+  CC = np.floor(((P-Min)/inputs['BallRad'])) + 2
 
   # Number of rectangular cuboids
-  NRectangles = (np.ceil(CC[:,:2].max(axis=0).astype(float)/NCubes)).astype(int)
-  #print(NRectangles)
-  #print(NRectangles)
+  NRectangles = (np.ceil(CC[:,:2].max(axis=0)/NCubes)).astype(int)
 
   # Number of BallRad cubes vertically:
-  HCubes = math.ceil((Max[2] - Min[2])/inputs['BallRad'])
-  #print(HCubes)
-  #print(NRectangles)
-  #print(f"HCubes: {HCubes}")
+  HCubes = np.ceil((Max[2] - Min[2])/inputs['BallRad'])
+
   isPass = True
 
   for i in range(1, NRectangles[0] + 1):
@@ -131,9 +124,6 @@ def cover_sets_plot(P,inputs):
       J3 = CC[:,1] >= (1 + (j -1)*NCubes)
       J4 = CC[:,1] <= (2 + j*NCubes)
       J = np.asarray(J1 & J2 & J3 & J4)
-      #J = np.asarray((CC[:,0] >= (1+ (i-1)*NCubes)) & (CC[:,0] <= (2 + (i)*NCubes)) & (CC[:,1] >= (1 + (j -1)*NCubes)) & (CC[:,1] <= (2 + j*NCubes)))
-      #print(J)
-      #print(Ind)
       ind = Ind[J] # the points
       
       cc = CC[J,:] # cube cordinates of the points
@@ -175,7 +165,16 @@ def cover_sets_plot(P,inputs):
       # Define the points inside the big volume
       Inside = ~((cc[:,0] == 1) | (cc[:,0] == (NCubes +2)) | (cc[:,1] == 1) | (cc[:,1] == (NCubes +2)))
       # Generate the balls
+      if DEBUG:
+        print(f"len(BoP): {len(BoP)}")
+        print(f"HCubes: {HCubes}")
+        print(f"Max: {Max}")
+        print(f"Min: {Min}")
+        print(f"MaxDist: {MaxDist}")
+        print(f"Radius: {Radius}")
+        print(f"")
       RandPerm = np.random.permutation(n)
+
       #RandPerm = np.transpose(np.asarray(scipy.io.loadmat('RandPerm.mat')['RandPerm']))
 
       for k in range(n):
@@ -240,7 +239,9 @@ def cover_sets_plot(P,inputs):
   #Ball = { d:Ball[d] for d in set(Ball).intersection(range(numB))}
   #print(Ball)
   Cen = Cen[:numB]
-  print(numB)
+  if DEBUG:
+    print(numB)
+    exit()
 
   f_time = time.time()
   print('Balls and centers generated')

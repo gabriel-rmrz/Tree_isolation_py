@@ -9,6 +9,9 @@ Ported from Pasi Raumonen code
  - We have to keep in mind that we ask for the type of Sub variable in tools/connected_components.py to make decisions.
 
 # TODO
+ - Change the objects in the script compute height with the ones comming from matlab to see where the differences come from.
+
+
  - Ask Pasi about the definition in line 442 in filtering_plot.m script
  - Implement lenght method including int and arrays
  - Still missing the implementation of plot_point_cloud called in isolate_trees
