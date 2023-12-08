@@ -1,6 +1,8 @@
 DEBUG=False
 
 if DEBUG:
+  dir_mat_files='debug/compute_height'
+  dir_plots='debug/compute_height/plots'
   def print2darray(arr):
     for i in arr:
       for j in i: 
@@ -16,26 +18,26 @@ def compute_height(P, inputs):
   print('---------')
   print('Compute the height of the points...')
   if DEBUG:
-    P_mat = np.asarray(scipy.io.loadmat('p.mat')['P'])
+    P_mat = np.asarray(scipy.io.loadmat('debug/compute_height/p.mat')['P'])
     import matplotlib.pyplot as plt
     plt.clf()
     plt.hist(P[:,0], bins=80, alpha=0.5)
-    plt.savefig("P_x.png")
+    plt.savefig(f"{dir_plots}/P_x.png")
     plt.clf()
     plt.hist(P_mat[:,0], bins=80,alpha=0.5)
-    plt.savefig("P_x_mat.png")
+    plt.savefig(f"{dir_plots}/P_x_mat.png")
     plt.clf()
     plt.hist(P[:,1], bins=80, alpha=0.5)
-    plt.savefig("P_y.png")
+    plt.savefig(f"{dir_plots}/P_y.png")
     plt.clf()
     plt.hist(P_mat[:,1], bins=80,alpha=0.5)
-    plt.savefig("P_y_mat.png")
+    plt.savefig(f"{dir_plots}/P_y_mat.png")
     plt.clf()
     plt.hist(P[:,2], bins=80, alpha=0.5)
-    plt.savefig("P_z.png")
+    plt.savefig(f"{dir_plots}/P_z.png")
     plt.clf()
     plt.hist(P_mat[:,2], bins=80,alpha=0.5)
-    plt.savefig("P_z_mat.png")
+    plt.savefig(f"{dir_plots}/P_z_mat.png")
     #P = P_mat
 
   ## Define the ground as points from each nonempty sq rectangle
@@ -133,10 +135,12 @@ def compute_height(P, inputs):
   for i in range(2,N[0]):
     for j in range(2,N[1]):
       k=(j-1)*N[0]+i
+      '''
       if DEBUG:
         k2 = (np.ravel_multi_index([[i-1],[j-1]], Bot.shape,'raise','F'))[0] + 1
         print(f"k: {k}")
         print(f"k2: {k2}")
+      '''
                                   
       if (np.asarray(BL[k])).any():
         I = np.argsort(P[BL[k],2])
@@ -144,21 +148,25 @@ def compute_height(P, inputs):
         Q = np.mean(P[BL[k][I[:a]],:],0)
         t = t+1
         Ground[t-1,:] = Q
+        '''
         if DEBUG:
           print(f"Ground[t-1]: {Ground[t-1]}")
           print(f"a: {a}")
           print(f"Q: {Q}")
           print(f"I[:a]: {I[:a]}")
           print(f"BL[k][I[:a]]: {BL[k][I[:a]]}")
+        '''
 
 
         if i == 2:
           t = t+1
           Ground[t-1,:] = Q-sq*np.asarray([1, 0, 0])
+          '''
           if DEBUG:
             print(f"Ground: {Ground}")
             print(f"Q: {Q}")
             print(f"Ground[t-1,:]: {Ground[t-1,:]}")
+          '''
         elif i == (N[0] -1):
           t = t+1
           Ground[t-1,:] = Q+sq*np.asarray([1, 0, 0])
@@ -171,7 +179,7 @@ def compute_height(P, inputs):
   Ground = Ground[:t,:]
 
   if DEBUG:
-    Ground_mat = np.asarray(scipy.io.loadmat('ground.mat')['Ground'])
+    Ground_mat = np.asarray(scipy.io.loadmat('debug/compute_height/ground.mat')['Ground'])
     print(f"Ground:")
     print2darray(Ground)
     print(f"len(Ground): {len(Ground)}")
@@ -181,25 +189,25 @@ def compute_height(P, inputs):
     import matplotlib.pyplot as plt
     plt.clf()
     plt.hist(Ground[:,0], bins=40, alpha=0.5)
-    plt.savefig("Ground_x.png")
+    plt.savefig(f"{dir_plots}/Ground_x.png")
     plt.clf()
     plt.hist(Ground_mat[:,0], bins=40, alpha=0.5)
-    plt.savefig("Ground_x_mat.png")
+    plt.savefig(f"{dir_plots}/Ground_x_mat.png")
     plt.clf()
     plt.hist(Ground[:,1], bins=40, alpha=0.5)
-    plt.savefig("Ground_y.png")
+    plt.savefig(f"{dir_plots}/Ground_y.png")
     plt.clf()
     plt.hist(Ground_mat[:,1], bins=40, alpha=0.5)
-    plt.savefig("Ground_y_mat.png")
+    plt.savefig(f"{dir_plots}/Ground_y_mat.png")
     plt.clf()
     plt.hist(Ground[:,2], bins=40, alpha=0.5)
-    plt.savefig("Ground_z.png")
+    plt.savefig(f"{dir_plots}/Ground_z.png")
     plt.clf()
     plt.hist(Ground_mat[:,2], bins=40, alpha=0.5)
-    plt.savefig("Ground_z_mat.png")
+    plt.savefig(f"{dir_plots}/Ground_z_mat.png")
 
     print(f"Ground-ground_mat:")
-    print2darray(Ground-Ground_mat)
+    #print2darray(Ground-Ground_mat)
     '''
     for key in BL.keys():
       print(f"key: {key}")
@@ -216,11 +224,11 @@ def compute_height(P, inputs):
     plt.clf()
     plt.triplot(Ground[:,0], Ground[:,1],Tri)
     plt.plot(Ground[:,0], Ground[:,1],'o')
-    plt.savefig('Delaunay.png')
+    plt.savefig(f"{dir_plots}/Delaunay.png")
     plt.clf()
     plt.triplot(Ground_mat[:,0], Ground_mat[:,1],Tri_mat.simplices)
     plt.plot(Ground_mat[:,0], Ground_mat[:,1],'o')
-    plt.savefig('Delaunay_mat.png')
+    plt.savefig(f"{dir_plots}/Delaunay_mat.png")
   
 
   ## Generate more ground points from each triangle
@@ -241,9 +249,6 @@ def compute_height(P, inputs):
     print(f"len(Tri_mat.simplices): {tsm[tsm[:,0] == 143]}")
     #print(f"len(Tri): {ts[:,0]}")
     #print(f"len(Tri_mat.simplices): {tsm[:,0]}")
-    print(f"Ground[142,:]: {Ground[142,:]}")
-    print(f"Ground[143,:]: {Ground[143,:]}")
-    print(f"Ground[144,:]: {Ground[144,:]}")
     print(f"a: {a}")
     print(f"SQ: {SQ}")
     print2darray(ts)
@@ -284,16 +289,16 @@ def compute_height(P, inputs):
       print(f"V: {V}")
   G = G[:t,:]
   if DEBUG:
-    G_mat = np.asarray(scipy.io.loadmat('g.mat')['G'])
+    G_mat = np.asarray(scipy.io.loadmat('debug/compute_height/g.mat')['G'])
     import matplotlib.pyplot as plt
     plt.clf()
     plt.hist(G[:,2], bins=80, alpha=0.5)
-    plt.savefig("G_z.png")
+    plt.savefig(f"{dir_plots}/G_z.png")
     plt.clf()
     plt.hist(G_mat[:,2], bins=80, alpha=0.5)
-    plt.savefig("G_mat_z.png")
+    plt.savefig(f"{dir_plots}/G_mat_z.png")
     plt.hist(G[:,2], bins=80, alpha=0.5)
-    plt.savefig("G_both.png")
+    plt.savefig(f"{dir_plots}/G_both.png")
 
     print(f"G: {G} ")
     print(f"len(G): {len(G)} ")
@@ -331,7 +336,7 @@ def compute_height(P, inputs):
   Bot[np.unravel_index(LexOrd-1, Bot.shape,'F')] = G[:,2]
 
   if DEBUG:
-    Bot_mat = np.asarray(scipy.io.loadmat('bot.mat')['Bot'])
+    Bot_mat = np.asarray(scipy.io.loadmat('debug/compute_height/bot.mat')['Bot'])
     print(f"G[:,2]: {G[:,2]}")
     print(f"len(G[:,2]): {len(G[:,2])}")
     print(f"Bot[np.unravel_index(LexOrd-1, Bot.shape,'F')]: {Bot[np.unravel_index(LexOrd-1, Bot.shape,'F')]}")
@@ -342,12 +347,12 @@ def compute_height(P, inputs):
     dif = (Bot2.max() - Bot2.min())
     plt.clf()
     plt.imshow((255*(Bot2- Bot2.min())/dif), cmap ='Blues', interpolation ='bilinear')
-    plt.savefig('Bot.png')
+    plt.savefig(f"{dir_plots}/Bot.png")
     Bot_mat[Bot_mat == 0.] = Bot_mat.min()
     dif = (Bot_mat.max() - Bot_mat.min())
     plt.clf()
     plt.imshow((255*(Bot_mat - Bot_mat.min())/dif), cmap ='Blues', interpolation ='bilinear')
-    plt.savefig('Bot_mat.png')
+    plt.savefig(f"{dir_plots}/Bot_mat.png")
 
   Hei = np.zeros(numP, dtype=np.int16)
   p = 1
@@ -366,7 +371,7 @@ def compute_height(P, inputs):
     while q+t <= m and LexOrd[q-1+t] == LexOrd[q-1]:
       t = t+1
     if Bot[np.unravel_index(LexOrd[q-1]-1,Bot.shape, 'F')] == 0:
-      a = 1
+      
       min1 = int(max(1,R[q-1,0]-a))
       max1 = int(min(nx,R[q-1,0]+a))
       min2 = int(max(1,R[q-1,1]-a))
@@ -386,6 +391,7 @@ def compute_height(P, inputs):
     else:
       Hei[PointInd[q-1:q+t-1]] = (P[PointInd[q-1:q+t-1],2] - Bot[np.unravel_index(LexOrd[q-1]-1,Bot.shape,'F')])*100
 
+      '''
       if DEBUG:
         #print(f"Here")
         hei = Hei[PointInd[q-1:q+t-1]]
@@ -399,6 +405,7 @@ def compute_height(P, inputs):
           print(f"p[hei<0]: {p[hei<0]}")
           print(f"len(hei): {len(hei)}")
           print(f"Bot[np.unravel_index(LexOrd[q-1]-1,Bot.shape,'F')]: {Bot[np.unravel_index(LexOrd[q-1]-1,Bot.shape,'F')]}")
+      '''
 
     q = q+t
   
@@ -408,18 +415,23 @@ def compute_height(P, inputs):
     print(f"Hei[Hei > 0].max(): {Hei[Hei > 0].max()}")
     import matplotlib.pyplot as plt
     plt.clf()
-    plt.hist(Hei, bins=80)
-    plt.savefig("Hei.png")
+    plt.hist(Hei, bins=80, alpha=0.5)
+    plt.savefig(f"{dir_plots}/Hei.png")
     plt.clf()
-    Hei_mat = np.asarray(scipy.io.loadmat('Hei.mat')['Hei'])
+    Hei_mat = np.asarray(scipy.io.loadmat('debug/compute_height/Hei.mat')['Hei'])
     print(f"Hei_mat[Hei_mat > 0].min(): {Hei_mat[Hei_mat > 0].min()}")
     print(f"Hei_mat[Hei_mat > 0].max(): {Hei_mat[Hei_mat > 0].max()}")
-    plt.hist(Hei_mat, bins=80)
-    plt.savefig("Hei_mat.png")
+    plt.hist(Hei_mat, bins=80, alpha=0.5)
+    plt.savefig(f"{dir_plots}/Hei_mat.png")
+    plt.clf()
+    plt.hist(Hei_mat[Hei_mat > 100], bins=80, alpha=0.5)
+    plt.savefig(f"{dir_plots}/Hei_mat.png")
+    plt.hist(Hei[Hei > 100], bins=80, alpha=0.5)
+    plt.savefig(f"{dir_plots}/Hei_both.png")
+    plt.clf()
     print(f"len(Hei): {len(Hei)}")
     print(f"Hei[Hei<0]: {Hei[Hei<0]}")
     print(f"len(Hei[Hei<0]): {len(Hei[Hei<0])}")
-    exit()
 
   return Hei, Ground, Tri
 

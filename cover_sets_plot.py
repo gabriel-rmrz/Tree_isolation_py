@@ -1,9 +1,9 @@
-DEBUG=True
+DEBUG=False
 import time
 import numpy as np
 #import pandas as pd
 #import awkward as awk
-#import scipy.io
+import scipy.io
 from collections import defaultdict
 from tools.neighbor_distances import neighbor_distances
 from ploting.plot_point_cloud import plot_point_cloud
@@ -11,6 +11,7 @@ from ploting.plot_point_cloud import plot_point_cloud
 
 
 def cover_sets_plot(P,inputs):
+
   '''
   ---------------------------------------------------------------------
   COVER_SETS_PLOT.M    Creates cover sets (surface patches) and their
@@ -60,6 +61,20 @@ def cover_sets_plot(P,inputs):
     direction   Set direction, unit vector, (n_setc x 3)-matrix
     dimension   Dimensionality, (n_setc x 3)-matrix   
   '''
+  if DEBUG:
+    print(f"type(P): {type(P)}")
+    print(f"(P.shape): {(P.shape)}")
+
+    #P = np.transpose(np.asarray(scipy.io.loadmat('debug/cover_sets_plot/P.mat')['P']))
+    print("##############################################")
+    print("##############################################")
+    print(f"READING and setting pointcloud from MATLAB")
+    print("##############################################")
+    print("##############################################")
+
+    P = np.asarray(scipy.io.loadmat('debug/cover_sets_plot/P.mat')['P'])
+    print(f"(P.shape) (technically P_mat): {(P.shape)}")
+
 
   print('  -----------------------')
   print('   Covering point cloud...')
@@ -86,7 +101,7 @@ def cover_sets_plot(P,inputs):
   # large balls, used to generate the cover sets and their neighbors:
   Cen = np.zeros(int(1e6), dtype=np.uint32) # the center points of the balls/cover sets
   BoP = np.zeros(numP, dtype=np.uint32) # the balls/cover sets the points belong
-  Ind = np.arange(1, numP+1, dtype=np.int32)
+  Ind = np.arange(numP, dtype=np.int32)
   NotExa = np.ones(numP) # Points not yet examined
   Dist = float(1e8) * np.ones(numP, dtype=np.float64) # Distance of point to the closest center
   numB = 0 # Number of sets generated
@@ -104,7 +119,7 @@ def cover_sets_plot(P,inputs):
   Max = P.max(axis=0) # Maximum coordinates
   
 
-  CC = np.floor(((P-Min)/inputs['BallRad'])) + 2
+  CC = (np.floor(((P-Min)/inputs['BallRad'])) + 2).astype(int)
 
   # Number of rectangular cuboids
   NRectangles = (np.ceil(CC[:,:2].max(axis=0)/NCubes)).astype(int)
@@ -175,7 +190,16 @@ def cover_sets_plot(P,inputs):
         print(f"")
       RandPerm = np.random.permutation(n)
 
-      #RandPerm = np.transpose(np.asarray(scipy.io.loadmat('RandPerm.mat')['RandPerm']))
+
+    
+      if DEBUG:
+        print(f"type(RandPerm): {type(RandPerm)}")
+        print(f"(RandPerm.shape): {(RandPerm.shape)}")
+        RandPerm = np.transpose(np.asarray(scipy.io.loadmat('debug/cover_sets_plot/RandPerm.mat')['RandPerm']))
+        RandPerm = RandPerm[:,0].astype(int)
+        print("Technically  RandPerm_mat now")
+        print(f"type(RandPerm): {type(RandPerm)}")
+        print(f"(RandPerm.shape): {(RandPerm.shape)}")
 
       for k in range(n):
         Q = RandPerm[k] -1
@@ -185,9 +209,11 @@ def cover_sets_plot(P,inputs):
             for m in [cc[Q,1]-1, cc[Q,1] , cc[Q,1] + 1]:
               for r in [cc[Q,2]-1, cc[Q,2] , cc[Q,2] + 1]:
                 #if((l,m,r) in Partition.keys()):
-                  for part in Partition[(l,m,r)]:
-                    #print(part)
-                    points.append(part)
+                if DEBUG:
+                  print(f"(l,m,r): {(l,m,r)}")
+                for part in Partition[(l,m,r)]:
+                  #print(part)
+                  points.append(part)
           Q = ind[Q]
           points = np.asarray(points)
           #print(points)

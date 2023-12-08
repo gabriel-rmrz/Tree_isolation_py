@@ -6,6 +6,8 @@ import open3d as o3d
 from cover_sets_plot import cover_sets_plot
 from filtering_plot import filtering_plot
 from isolate_trees import isolate_trees
+from tools.remove_bottom import remove_bottom
+from tools.compute_height import compute_height 
 
 def get_pointcloud(las, isRGB=False):
   point_data = np.stack([las.X, las.Y, las.Z], axis=0).transpose((1,0))
@@ -36,7 +38,8 @@ def main():
   #cover_sets_plot(P,inputs['inputs'])
   #filtering_plot(P,inputs['inputs'])
   isolate_trees(P)
-  
+  #remove_bottom(P,np.array([0]),np.array([0]),inputs['inputs'])
+  #compute_height(P,inputs['inputs'])
 
 if __name__ == '__main__':
   main()

@@ -1,3 +1,4 @@
+DEBUG = False
 import numpy as  np
 import yaml
 from ploting.plot_point_cloud import plot_point_cloud
@@ -61,21 +62,26 @@ def isolate_trees(P, Hei=None, cover=None):
   # between 2 and 3 metters above the ground
   H = np.asarray(Hei[cover['center']]) # Height of the patches
   Sec = (H > 200) *(H < 300) # Logical vector of patches
-  #print(f"sum(Sec): {sum(Sec)}")
-  #print(f"len(Sec): {len(Sec)}")
-  #print(f"len(cover.center): {len(cover['center'])}")
-  #print(f"len(cover.neighbor): {len(cover['neighbor'])}")
-  #print(sum(Sec))
-  exit()
+  if DEBUG:
+    print(f"H: {H}")
+    print(f"H: {H}")
+    print(f"sum(Sec): {sum(Sec)}")
+    print(f"len(Sec): {len(Sec)}")
+    print(f"len(cover.center): {len(cover['center'])}")
+    print(f"len(cover.neighbor): {len(cover['neighbor'])}")
+    print(sum(Sec))
 
   StemSec, CompSize = connected_components(cover['neighbor'], Sec, 25)
-  print(StemSec)
-  print(CompSize)
+  if DEBUG:
+    print(StemSec)
+    print(CompSize)
   n = len(StemSec)
   print(f"{n} stem sections determined")
   ## NOTICE! Here we have another more sophisticated way to select the stem sections:
   # StemSec = define_stem_sections(P,cover,Hei)
   
+  if DEBUG:
+    exit()
   # Plot the stem sections
   Ce = P[cover['center'],:]
   sec = (H > 50) *(H < 400) 
@@ -89,10 +95,14 @@ def isolate_trees(P, Hei=None, cover=None):
   # Compute the shortest paths, first with the height restrictions.
   # The proceess also identifies gaps in the grah and creates new links
   H = (Hei[cover['center']]/100).astype(float) # The height of the patches in meters
-  Base = [] # Define the stem sections as the base/starting
+  # Define the stem sections as the base/starting
             # point for the shortest paths
+  '''
+  Base = [] 
   for key in StemSec.keys():
     Base = np.concatenate((Base, StemSec[key]), axis=0)
+  '''
+  Base = np.concatenate([StemSec[a] for a in StemSec.keys()])
   
   BaseDist = (Hei[Base]/100).astype(float) # Path length at the base is the height
 

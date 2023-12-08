@@ -1,6 +1,31 @@
 DEBUG=False
 import numpy as np
 def remove_bottom(P, Points, Hei, inputs):
+  if DEBUG:
+    import scipy.io
+    print(f"type(P): {type(P)}")
+    print(f"(P.shape): {(P.shape)}")
+    print(f"type(Hei): {type(Hei)}")
+    print(f"(Hei.shape): {(Hei.shape)}")
+    print(f"type(Points): {type(Points)}")
+    print(f"(Points.shape): {(Points.shape)}")
+
+    #P = np.transpose(np.asarray(scipy.io.loadmat('debug/remove_bottom/P.mat')['P']))
+    print("##############################################")
+    print("##############################################")
+    print(f"READING and setting pointcloud from MATLAB")
+    print("##############################################")
+    print("##############################################")
+
+    #P = np.asarray(scipy.io.loadmat('debug/remove_bottom/P.mat')['P'])
+    #Hei = np.asarray(scipy.io.loadmat('debug/remove_bottom/Hei.mat')['Hei'])
+    #Hei = Hei[:,0].astype(int)
+    #Points = np.asarray(scipy.io.loadmat('debug/remove_bottom/Points.mat')['Points'])
+    #Points = Points[:,0].astype(bool)
+    print(f"(P.shape) (technically P_mat): {(P.shape)}")
+    print(f"(Hei.shape) (technically Hei_mat): {(Hei.shape)}")
+    print(f"(Points.shape) (technically Points_mat): {(Points.shape)}")
+
   print('---------')
   print('Remove the bottom...')
 
@@ -15,7 +40,7 @@ def remove_bottom(P, Points, Hei, inputs):
   nx = int(np.ceil((Max[0]-Min[0])/SQ))
   ny = int(np.ceil((Max[1]-Min[1])/SQ))
   n=3
-  Filled = np.zeros([nx,ny,n], dtype='bool')
+  Filled = np.zeros((nx,ny,n), dtype='bool')
   PointInd = np.asarray(range(numP))
   I = Hei < n*100
   
@@ -51,7 +76,6 @@ def remove_bottom(P, Points, Hei, inputs):
     print(f"len(R): {len(R)}")
     print(f"Hei[PointInd][L<=0]: {Hei[PointInd][L<=0]}")
     print(f"Hei[Hei<0]: {Hei[Hei<0]}")
-    exit()
   if J5.any():
     L[J5] = 1
   LexOrd = (R[:,0] + (R[:,1]-1) *nx +(L-1)*nx*ny).astype(int)
@@ -83,7 +107,10 @@ def remove_bottom(P, Points, Hei, inputs):
   # Define the outputs and summarize the results
   numP0 = len(Points)
   Ind = np.asarray(range(numP0))
+  print(f"Points: {Points}")
   Ind = Ind[Points]
+  print(f"Ind: {Ind}")
+  print(f"len(Ind): {len(Ind)}")
   Points[Ind[~Pass]] = False
   H = np.zeros(numP0).astype(int)
   H[Points] = Hei[Pass]
@@ -94,10 +121,6 @@ def remove_bottom(P, Points, Hei, inputs):
   print(f"\t Points left: {numP2}")
 
 
-
-
-  if DEBUG:
-    exit()
 
   return P, Points, H
   
