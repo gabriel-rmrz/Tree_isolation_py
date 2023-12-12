@@ -1,3 +1,4 @@
+import numpy as np
 '''
  This file is part of TREEQSM.
  
@@ -45,7 +46,7 @@ def cubical_partition(P, EL, nargout=3, NE=3):
   # of the big cube
   N = np.ceil((Max-Min)/EL)+2*NE+1
 
-  while 8*N[0]*N[1]*N[2} > 4e9:
+  while 8*N[0]*N[1]*N[2] > 4e9:
     EL = 1.1*EL
     N = np.ceil((Max-Min)/EL)+2*NE+1
 
@@ -66,14 +67,14 @@ def cubical_partition(P, EL, nargout=3, NE=3):
   numP = len(P[:,0]) # Number of points
   if nargout<= 3:
     p = 1 # The index of the point under comparison
-    while p <= np:
+    while p <= numP:
       t = 1
       while (p+t <= numP) and (LexOrd[p-1] == LexOrd[p-1+t]):
         t += 1
       q = SortOrd[p-1]
-      Partition[tuple(CubeCoord[q,0],CubeCoord[q,1], CubeCoord[q,2])] = SortOrd[p-1:p+t-1]
+      Partition[tuple([CubeCoord[q,0],CubeCoord[q,1], CubeCoord[q,2]])] = SortOrd[p-1:p+t-1]
       p += t
-    return Partiotion, CubeCoord, Info
+    return Partition, CubeCoord, Info
   else:
     numC = len(np.unique(LexOrd))
 
@@ -91,6 +92,6 @@ def cubical_partition(P, EL, nargout=3, NE=3):
       Partition[c] = SortOrd[p-1:p+t-1]
       Cubes[CubeCoord[q,0],CubeCoord[q,1], CubeCoord[q,2]] = c
       p += t
-    return Partiotion, CubeCoord, Info, Cubes
+    return Partition, CubeCoord, Info, Cubes
 
 

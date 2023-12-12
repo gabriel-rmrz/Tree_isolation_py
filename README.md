@@ -2,6 +2,7 @@
 Ported from Pasi Raumonen code
 
 # NOTES
+ - The part "Determine the correspondence between the new and the previous components" starting from the line 107 of hte shortest_paths_height.m script is been implemented with variables that doesn't exist and it's not being used.
  - The result after applying the cubical downsamplig is still different. !!! Locate the source
    - Test if the using the operations by blocks could be the cause.
  - Why is the LexOrd vector defined by multiplying C * [1, N(1), N(1) * N(2)] and not [1, N(1), N(2) * N(2)]
