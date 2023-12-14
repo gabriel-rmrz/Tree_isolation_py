@@ -1,4 +1,4 @@
-DEBUG=True
+DEBUG=False
 import numpy as np
 from scipy.spatial.distance import cdist, squareform
 from collections import defaultdict
@@ -270,7 +270,7 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
                 C = CS
                 m = len(unvisited)
                 Unvisited[:m] = unvisited
-                UV[unvisited-1] = True
+                UV[unvisited] = True
                 a = 1
                 b = m 
                 J= 1
@@ -387,14 +387,5 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
   cover["neighbor"] = nei
   cover["NeiDis"] = NeiDis
 
-
-
-
-
-
-
-
-  EndSet = 0
-  PathLen = 0
   return  EndSet, cover, PathLen
 

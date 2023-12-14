@@ -119,7 +119,7 @@ def connected_components(Nei,Sub,MinSize,Fal=-1):
         sub = np.zeros(numB, dtype='bool')
       else:
         sub = Fal
-      sub[Sub] = True
+      sub[Sub-1] = True
       Sub = sub
     else:
       # Subset of cover sets
