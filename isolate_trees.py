@@ -182,6 +182,7 @@ def isolate_trees(P, Hei=None, cover=None):
   H = Hei[cover["center"]] # height of the sets
   Keep = np.ones(numT, dtype='bool') # keep these threes
   Bases = {} # Tree bases
+  Ind = np.array(range(numT)).astype(np.uint32)
   for i in range(1, numT+1):
     T = Trees[i]
     if (len(T) ==0) or (np.min(H[T]) > 50) or ((np.max(H[T]) - np.min(H[T])) < 500):
@@ -189,13 +190,25 @@ def isolate_trees(P, Hei=None, cover=None):
     else:
       I = H[T] < 50
       Bases[i] = T[I]
-  Trees = Trees[Keep]
+  Trees = {key: Trees[key] for key in Ind[Keep] +1}
   numT = len(Trees)
-  Bases = Bases[Keep]
+  Bases = {key: Bases[key] for key in Ind[Keep] +1}
   print(f"         {numT} trees isolated")
   #plot_segs(P,Trees,5,1,cover["ball"])
   #plot_segs(P,Trees,5,20,cover["ball"])
 
+  ## 8. Segment the trees into stem and branches based on shortest paths
+  # Determine the shortest paths
+  base = np.concatenate([Bases[key] for key in Bases.keys()]) # the bases of the paths
+  Forb = np.ones(numB, dtype='bool') # the forbiden sets for the paths
+  Forb[np.concatenate([Trees[key] for key in Trees.keys()])] = False
+  PathNum = shortest_paths(cover, base, Forb)
+
+  # Segment each tree and select only the stem
+  for i in range(1,numT+1):
+    Forb = np.ones(numB, dtype='bool')
+    Forb[Trees[i]] = False
+    segment =segments_num_path(cover, Bases[i],Forb,PathNum)
 
   
 
