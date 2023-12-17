@@ -32,4 +32,38 @@ def sements_num_path(cover, Base, Forb, PathNum):
     children      Children segments of each segment, (n_seg x 1)-cell
   '''
 
+  Nei = cover["neighbor"]
+  numB = len(Nei)                              # the number of cover sets
+  a = max(100000 numB/100)                     # Estimate the maximum number of segments
+  SBas = {}                                    # The segment bases found
+  Segs = {}                                    # The segment found
+  SPar = np.zeros((a,2), dtype=np.uint32)      # The parent segment of each segment
+  SChi = {}                                    # The childred segmen of each segment
+
+  # Initialize SChi
+  SChi[1] = np.zeros(5000, dtype=np.uint32)
+  C = np.zeros(200)
+  for i in range(2, a+1):
+    SChi[i] = C
+  NChi = np.zeros(a)  # Number of child segments found for each segment
+
+  Fal = np.zeros(numB, dtype='bool')  # Logical false-vector for cover sets
+  s=1                                 # The index of the segment under expansion
+  b=s                                 # The index of the latest found base
+
+  ForbAll = Fal      # The forbiden sets
+  ForbAll[Forb] = True
+  ForbAll[Base] = True
+  Forb = ForbAll     # The bornidden sets for the segment under expansion
+
+  Continue = True   # True as long as the component can be semented further
+  NewSeg = True     # True if the first Cut for the current segment
+  nl = l            # The number of cover set layers currently in the segment
+
+  # Segmenting stops when there are no more segments to be found
+
+
+
+
+
 
