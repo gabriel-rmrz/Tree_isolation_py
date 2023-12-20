@@ -9,7 +9,10 @@ Ported from Pasi Raumonen code
  - Line 490 ( R = floor((double(P(PointInd,1:2))-Min(1:2))/SQ)+1;) of the origina method compute\_height might not be correct as the value of Min has been redefined from P.Min() to Ground.Min(), it issues negative values of the indices.
  - We have to keep in mind that we ask for the type of Sub variable in tools/connected_components.py to make decisions.
 
+
 # TODO
+ - Check why the Components value in connected_componens.m:80 and segments_paths_height:244 are different, even if they seem to implement the same solution.
+ - See if we can use a generic method instead of tools/unique_elements.py
  - Change the objects in the script compute height with the ones comming from matlab to see where the differences come from.
 
 
