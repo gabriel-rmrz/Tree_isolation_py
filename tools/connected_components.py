@@ -80,7 +80,7 @@ def connected_components(Nei,Sub,MinSize,Fal=-1):
       K = Nei[Sub[1]] == Sub[2]
       if np.any(I) + np.any(J) + np.any(K) >= 2:
         Components[1] = np.array(int(Sub))
-        CompSize[3]
+        CompSize = [3]
       elif any(I):
         Components[1] = np.asarray(int(Sub[:2]))
         Components[2] = np.array(int(Sub[2]))

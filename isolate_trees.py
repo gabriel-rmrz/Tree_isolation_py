@@ -7,6 +7,7 @@ from cover_sets_plot import cover_sets_plot
 from tools.connected_components import connected_components
 from shortest_paths_height import shortest_paths_height
 from shortest_paths import shortest_paths
+from segments_num_path import segments_num_path
 def isolate_trees(P, Hei=None, cover=None):
   '''
   This function implements the tree isolation method in Greco et al. 2023
@@ -205,10 +206,12 @@ def isolate_trees(P, Hei=None, cover=None):
   PathNum = shortest_paths(cover, base, Forb)
 
   # Segment each tree and select only the stem
-  for i in range(1,numT+1):
+  print(f"Trees.keys(): {Trees.keys()}")
+  print(f"numT: {numT}")
+  for key in Trees.keys():
     Forb = np.ones(numB, dtype='bool')
-    Forb[Trees[i]] = False
-    segment =segments_num_path(cover, Bases[i],Forb,PathNum)
+    Forb[Trees[key]] = False
+    segment =segments_num_path(cover, Bases[key],Forb,PathNum)
 
   
 

@@ -1,4 +1,6 @@
-def sements_num_path(cover, Base, Forb, PathNum):
+import numpy as np
+from tools.define_cut import define_cut
+def segments_num_path(cover, Base, Forb, PathNum):
   '''
   ---------------------------------------------------------------------
   SEGMENTS_NUM_PATH.M        Segments the covered point cloud into branches
@@ -34,7 +36,7 @@ def sements_num_path(cover, Base, Forb, PathNum):
 
   Nei = cover["neighbor"]
   numB = len(Nei)                              # the number of cover sets
-  a = max(100000 numB/100)                     # Estimate the maximum number of segments
+  a = max(100000 , numB/100)                     # Estimate the maximum number of segments
   SBas = {}                                    # The segment bases found
   Segs = {}                                    # The segment found
   SPar = np.zeros((a,2), dtype=np.uint32)      # The parent segment of each segment
@@ -51,6 +53,10 @@ def sements_num_path(cover, Base, Forb, PathNum):
   s=1                                 # The index of the segment under expansion
   b=s                                 # The index of the latest found base
 
+  SBas[s] = Base
+  Seg = {}             # The cover set layers in the current segment
+  Seg[1] = Base
+
   ForbAll = Fal      # The forbiden sets
   ForbAll[Forb] = True
   ForbAll[Base] = True
@@ -58,11 +64,25 @@ def sements_num_path(cover, Base, Forb, PathNum):
 
   Continue = True   # True as long as the component can be semented further
   NewSeg = True     # True if the first Cut for the current segment
-  nl = l            # The number of cover set layers currently in the segment
+  numL = 1            # The number of cover set layers currently in the segment
 
   # Segmenting stops when there are no more segments to be found
 
+  while Continue and (b < numB):
+    # Update the forbiden sets
+    Forb[Seg[numL]] = True
 
+    # Define the study
+    Cut = define_cut(Nei, Seg[numL], Forb, Fal)
+    CutSize=len(Cut)
+
+    if NewSeg:
+      NewSeg = False
+      numS = min(CutSize, 6)
+
+  # Define the components of cut and study regions
+  if CutSize > 0:
+    CutComps = cut_components(Nei, Cut, CutSize, Fal, Fal)
 
 
 
