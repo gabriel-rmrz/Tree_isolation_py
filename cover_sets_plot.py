@@ -6,7 +6,7 @@ import numpy as np
 import scipy.io
 from collections import defaultdict
 from tools.neighbor_distances import neighbor_distances
-from ploting.plot_point_cloud import plot_point_cloud
+from plotting.plot_point_cloud import plot_point_cloud
 
 
 
@@ -243,7 +243,7 @@ def cover_sets_plot(P,inputs):
             J3 = dist < MaxDist 
             NotExa[points[J3]] = False
             numB = numB + 1
-            Ball[numB] = I 
+            Ball[numB-1] = I 
             Cen[numB-1] = Q
             D = Dist[I]
             L = d < D
@@ -309,7 +309,7 @@ def cover_sets_plot(P,inputs):
   i_time = time.time()
   Nei = {}
   Fal = np.zeros(int(numB), dtype='bool')
-  for i in range(1,numB+1):
+  for i in range(numB):
     B = Ball[i] # the points in the big ball of cover set "i"
     
     
@@ -338,14 +338,14 @@ def cover_sets_plot(P,inputs):
   # Make the relation symmetric by adding, if needed, A as B's neighbor
   # in the case B is A's neighbor
 
-  for i in range(1,numB+1):
+  for i in range(numB):
     N_i = Nei[i]
     for j in range(len(N_i)):
       #print(f"N_i: {N_i}")
       #print(f"N_{i}[{j}]: {N_i[j]}")
-      K = (Nei[N_i[j]+1] == (i-1))
+      K = (Nei[N_i[j]] == (i))
       if np.sum(K) > 0:
-         np.append(Nei[N_i[j]+1],i)
+         np.append(Nei[N_i[j]],i)
 
   
   f_time = time.time()
@@ -356,7 +356,7 @@ def cover_sets_plot(P,inputs):
 
 
   cover = {}
-  cover["ball"] = Ball
+  cover["ball"] = Bal
   cover["center"] = Cen
   cover["neighbor"] = Nei
 

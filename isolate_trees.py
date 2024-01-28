@@ -1,13 +1,15 @@
-DEBUG = False
+DEBUG = True
 import numpy as  np
 import yaml
-from ploting.plot_point_cloud import plot_point_cloud
+from plotting.plot_point_cloud import plot_point_cloud
+from plotting.plot_segs import plot_segs
 from filtering_plot import filtering_plot
 from cover_sets_plot import cover_sets_plot
 from tools.connected_components import connected_components
 from shortest_paths_height import shortest_paths_height
 from shortest_paths import shortest_paths
 from segments_num_path import segments_num_path
+
 def isolate_trees(P, Hei=None, cover=None):
   '''
   This function implements the tree isolation method in Greco et al. 2023
@@ -75,6 +77,15 @@ def isolate_trees(P, Hei=None, cover=None):
 
   StemSec, CompSize = connected_components(cover['neighbor'], Sec, 25)
   if DEBUG:
+    print(f"StemSec[1]: {StemSec[1]}")
+    print(f"StemSec.keys(): {StemSec.keys()}")
+    #plot_point_cloud(P[cover['center'][np.concatenate([StemSec[0], StemSec[1], StemSec[2], StemSec[3], StemSec[4], StemSec[5]])],:])
+    plot_point_cloud(P[cover['center'][np.concatenate([StemSec[0], StemSec[1]])],:])
+    #plot_point_cloud(P[cover['center'][StemSec[0]],:])
+    #plot_point_cloud(P[cover['center'][Sec,:],:])
+    #plot_point_cloud(P)
+    #plot_segs(P,{1:StemSec[1], 2:StemSec[2]},1,cover["ball"])
+  if DEBUG:
     print(StemSec)
     print(CompSize)
   n = len(StemSec)
@@ -86,7 +97,7 @@ def isolate_trees(P, Hei=None, cover=None):
   Ce = P[cover['center'],:]
   sec = (H > 50) *(H < 400) 
   plot_point_cloud(Ce[sec,:])
-  #plot_segs(P, StemSec,1, 5, cover['ball']))
+  #plot_segs(P, StemSec,5, cover['ball'])
 
   ## 4. Determine the shortest path of the patched to the "StemSec"
   print('\t -------------------------------------')
@@ -104,6 +115,7 @@ def isolate_trees(P, Hei=None, cover=None):
   '''
   Base = np.concatenate([StemSec[a] for a in StemSec.keys()])
   
+
   BaseDist = (Hei[Base]/100).astype(float) # Path length at the base is the height
 
   # Restriction and iteration parameters  for the shortest path computation
@@ -117,6 +129,12 @@ def isolate_trees(P, Hei=None, cover=None):
   #shortest_paths_height return  PathNum, PathDist, EndSet
   EndSet, cover, PathLen = shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs)
 
+  if DEBUG:
+    print(f"len(EndSet): {len(EndSet)}")
+    print(f"len(cover): {len(cover)}")
+    print(f"len(PathLen): {len(PathLen)}")
+    #print(f"cover['neighbor']: {cover['neighbor']}")
+    #print(CompSize)
   ## 5. Define the trees as those sets whose path end up at the same stem section
   print('  -----------------------')
   print('   Defining the trees...')
@@ -126,7 +144,7 @@ def isolate_trees(P, Hei=None, cover=None):
   ind = np.array(range(numB))
   Trees = {} # Initialize the ouput dictionary
   Base = {} # tree bases
-  for i in range(1,numT+1):
+  for i in range(numT):
     S = StemSec[i]
     n = len(S)
     C = {}
@@ -135,13 +153,13 @@ def isolate_trees(P, Hei=None, cover=None):
       print(f"S: {S}")
       print(f"len(EndSet) : {len(EndSet)}")
       print(f"len(S): {len(S)}")
-    for j in range(1,n+1):
+    for j in range(n):
       if DEBUG:
         print(f" S[j-1]: {S[j-1]}")
         print(f"len(EndSet == S[j-1]): {len(EndSet == S[j-1])}")
         print(f"len(ind): {len(ind)}")
         print(f"ind[EndSet == S[j-1]]: {ind[EndSet == S[j-1]]}")
-      C[j] = ind[EndSet == S[j-1]]
+      C[j] = ind[EndSet == S[j]]
     if DEBUG:
       print(f"EndSet : {EndSet}")
       print(f"C (before): {C}")
@@ -165,13 +183,13 @@ def isolate_trees(P, Hei=None, cover=None):
 
   ## Define the bottoms of the trees as thos sets whose path_lenght/height
   #  ratio is less than 1.1
-  for i in range(1, numT+1):
+  for i in range(numT):
     B = Base[i] # the base sets of the tree "i"
     n = len(B)
     C = {} # each element contains all the set connected to the corresponding base set
-    for j in range(1, n+1):
-      S = ind[EndSet == B[j-1]] # sets connected to the base set B[j-1]
-      I = PathLen[S] < 1.1*H[B[j-1]] # paths are straight enough
+    for j in range(n):
+      S = ind[EndSet == B[j]] # sets connected to the base set B[j-1]
+      I = PathLen[S] < 1.1*H[B[j]] # paths are straight enough
       C[j] = S[I]
     Bottom = np.concatenate([C[key] for key in C.keys()]) # The bottom sets
     Trees[i] = np.concatenate([Trees[i], Bottom]) # include the bottom to the tree
@@ -184,19 +202,20 @@ def isolate_trees(P, Hei=None, cover=None):
   Keep = np.ones(numT, dtype='bool') # keep these threes
   Bases = {} # Tree bases
   Ind = np.array(range(numT)).astype(np.uint32)
-  for i in range(1, numT+1):
+  for i in range(numT):
     T = Trees[i]
     if (len(T) ==0) or (np.min(H[T]) > 50) or ((np.max(H[T]) - np.min(H[T])) < 500):
-      Keep[i-1] = False
+      Keep[i] = False
     else:
       I = H[T] < 50
       Bases[i] = T[I]
-  Trees = {key: Trees[key] for key in Ind[Keep] +1}
+  Trees = {key: Trees[key] for key in Ind[Keep] }
   numT = len(Trees)
-  Bases = {key: Bases[key] for key in Ind[Keep] +1}
+  Bases = {key: Bases[key] for key in Ind[Keep] }
   print(f"         {numT} trees isolated")
-  #plot_segs(P,Trees,5,1,cover["ball"])
-  #plot_segs(P,Trees,5,20,cover["ball"])
+  print(f"Trees.keys(): {Trees.keys()}")
+  plot_point_cloud(P[cover['center'][np.concatenate([Trees[0],Trees[1]])],:])
+  #plot_segs(P,Bases,20,cover["ball"])
 
   ## 8. Segment the trees into stem and branches based on shortest paths
   # Determine the shortest paths

@@ -127,7 +127,7 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
     VoxOtherSets= (Voxels[Other]).astype(int)
     I = Tree[np.unravel_index(VoxOtherSets-1,Tree.shape,'F')]
     Other = Other[I]
-    Comps, CS = connected_components(nei, Other+1, 1)
+    Comps, CS = connected_components(nei, Other, 1)
     if DEBUG:
       print(f"Connected components done")
 
@@ -152,7 +152,7 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
     ## Check if component can be joined to a tree
     TSS = np.zeros(numC, dtype=np.int32)
     
-    for i in I+1:#range(1,numC+1): # Used I+1 instead of range(1,numC+1) to keep the decreasing order of CS
+    for i in I:#range(1,numC+1): # Used I+1 instead of range(1,numC+1) to keep the decreasing order of CS
       Comp = Comps[i] # sets in the component
 
       if np.any(~TreeSets[Comp]):
@@ -261,9 +261,9 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
 
                 NeiDis[TS] = np.concatenate([NeiDis[TS], [dist]])
                 NeiDis[CS] = np.concatenate([NeiDis[CS], [dist]])
-                PathLen[CS-1] = PathLen[TS-1] + dist
-                PathNei[CS-1] = TS
-                EndSet[CS-1] = EndSet[TS-1]
+                PathLen[CS] = PathLen[TS] + dist
+                PathNei[CS] = TS
+                EndSet[CS] = EndSet[TS]
 
                 # Expand as much as possibl;e
                 unvisited = np.setdiff1d(nei[CS], TS)
@@ -275,11 +275,15 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
                 b = m 
                 J= 1
                 while a <=b:
-                  N = nei[C+1]
-                  d = NeiDis[C+1]
+                  N = nei[C]
+                  d = NeiDis[C]
                   L = PathLen[C] + d
                   if DEBUG:
                     print(f"N : {N}")
+                    print(f"Hei[N] : {Hei[N]}")
+                    print(f"PathLen[N] : {PathLen[N]}")
+                    print(f"Forb[N] : {Forb[N]}")
+                    print(f"DHRel : {DHRel}")
                   I = (L<PathLen[N]) & (L/Hei[N] < DHRel) & ~Forb[N]
                   N = N[I]
                   if len(N) >0:
@@ -345,8 +349,8 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
       PathLen[Base] = BaseDist
       EndSet[Base] = Base
       while a <=b:
-        N = nei[C+1]
-        d = NeiDis[C+1]
+        N = nei[C]
+        d = NeiDis[C]
         L = PathLen[C] + d
         if DEBUG:
           print(f"N : {N}")

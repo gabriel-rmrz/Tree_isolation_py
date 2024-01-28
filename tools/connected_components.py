@@ -1,4 +1,4 @@
-DEBUG=False
+DEBUG= False
 import numpy as np
 from collections import defaultdict
 
@@ -17,11 +17,13 @@ from collections import defaultdict
 # You should have received a copy of the GNU General Public License
 # along with TREEQSM.  If not, see <http://www.gnu.org/licenses/>.
 
-def connected_components(Nei,Sub,MinSize,Fal=-1):
+def connected_components(Nei,Sub,MinSize,Fal=None):
   if DEBUG:
     print(f"len(Nei): {len(Nei)}")
     print(f"len(Sub): {len(Sub)}")
     print(f"sum(Sub): {sum(Sub)}")
+    print(f"type(Nei): {type(Nei)}")
+    print(f"type(Sub): {type(Sub)}")
   '''
   ---------------------------------------------------------------------
   CONNECTED_COMPONENTS.M      Determines the connected components of cover
@@ -61,17 +63,17 @@ def connected_components(Nei,Sub,MinSize,Fal=-1):
     n = len(Sub)
     Components = {}
     if n == 1:
-      Components[1] = np.array(int(Sub))
+      Components[0] = np.array(int(Sub))
       CompSize = [1]
       return Components, CompSize
     elif n == 2:
       I = Nei[Sub[0]] == Sub[1]
       if np.any(I):
-        Components[1] = np.array(int(Sub))
+        Components[0] = np.array(int(Sub))
         CompSize = [2]
       else:
-        Components[1] = np.array(int(Sub[0]))
-        Components[2] = np.array(int(Sub[1]))
+        Components[0] = np.array(int(Sub[0]))
+        Components[1] = np.array(int(Sub[1]))
         CompSize = [1, 1]
       return Components, CompSize
     elif n == 3:
@@ -79,47 +81,47 @@ def connected_components(Nei,Sub,MinSize,Fal=-1):
       J = Nei[Sub[0]] == Sub[2]
       K = Nei[Sub[1]] == Sub[2]
       if np.any(I) + np.any(J) + np.any(K) >= 2:
-        Components[1] = np.array(int(Sub))
+        Components[0] = np.array(int(Sub))
         CompSize = [3]
       elif any(I):
-        Components[1] = np.asarray(int(Sub[:2]))
-        Components[2] = np.array(int(Sub[2]))
+        Components[0] = np.asarray(int(Sub[:2]))
+        Components[1] = np.array(int(Sub[2]))
         CompSize = [2, 1]
       elif sum(J):
-        Components[1] = np.asarray(int(Sub[[0,2]]))
-        Components[2] = np.array(int(Sub[1]))
+        Components[0] = np.asarray(int(Sub[[0,2]]))
+        Components[1] = np.array(int(Sub[1]))
         CompSize = [2, 1]
       elif sum(K):
-        Components[1] = np.array(int(Sub[[1,2]]))
-        Components[2] = np.array(int(Sub[0]))
+        Components[0] = np.array(int(Sub[[1,2]]))
+        Components[1] = np.array(int(Sub[0]))
         CompSize = [2, 1]
       else:
-        Components[1] = np.array(int(Sub[0]))
-        Components[2] = np.array(int(Sub[1]))
-        Components[3] = np.array(int(Sub[2]))
+        Components[0] = np.array(int(Sub[0]))
+        Components[1] = np.array(int(Sub[1]))
+        Components[2] = np.array(int(Sub[2]))
         CompSize = [1, 1, 1]
       return Components, CompSize
   elif np.any(Sub) or (len(Sub) == 1 and Sub[0] == 0):
 
     numB = len(Nei)
     numS = 0 
-    if Fal_i == -1:
+    if Fal_i == None:
       Fal = np.zeros(numB, dtype='bool')
     if (len(Sub) == 1) and (Sub[0] ==0):
       # All the cover sets
       numS = numB
-      if Fal_i == -1:
+      if Fal_i == None:
         Sub = np.ones(numB, dtype='bool')
       else:
         Sub = ~Fal
     elif not isinstance(Sub[0], (np.bool_, bool)):
       # Subset of cover sets
       numS = len(Sub)
-      if Fal_i == -1:
+      if Fal_i == None:
         sub = np.zeros(numB, dtype='bool')
       else:
         sub = Fal
-      sub[Sub-1] = True
+      sub[Sub] = True
       Sub = sub
     else:
       # Subset of cover sets
@@ -134,13 +136,13 @@ def connected_components(Nei,Sub,MinSize,Fal=-1):
     Components = {}#defaultdict()
     CompSize = np.zeros(numS, dtype=np.uint32)
     numC = 0
-    m = 1
-    while  not Sub[m-1]:
+    m = 0
+    while  not Sub[m]:
       m = m+1
     i = 0
     Comp = np.zeros(numS, dtype=np.uint32)
 
-    while i < numS and m <= numB:
+    while i < numS and m < numB:
       Add = Nei[m]
       I = Sub[Add]
       Add = Add[I]
@@ -148,8 +150,8 @@ def connected_components(Nei,Sub,MinSize,Fal=-1):
         a = len(Add)
       else:
         a = 1
-      Comp[0] = m-1
-      Sub[m-1] = False
+      Comp[0] = m
+      Sub[m] = False
       t = 1
       while a>0:
         #print(f"len(Add): {len(Add)}")
@@ -164,9 +166,9 @@ def connected_components(Nei,Sub,MinSize,Fal=-1):
         Add = np.asarray(Add_temp).astype(int)
         '''
         if type(Add) != np.uint32:
-          Add = np.concatenate([Nei[a] for a in Add+1])
+          Add = np.concatenate([Nei[key] for key in Add])
         else:
-          Add = Nei[a] 
+          Add = Nei[Add] 
         '''
         if DEBUG:
           print(f"Add: {Add}")
@@ -205,13 +207,13 @@ def connected_components(Nei,Sub,MinSize,Fal=-1):
           print(f"Comp: {Comp}")
           print(f"Components: {Components}")
           print(f"CompSize: {CompSize}")
-        Components[numC] = np.array(Comp[:t])
+        Components[numC-1] = np.array(Comp[:t])
         CompSize[numC-1] = t
         if DEBUG:
           print(f"Components(After): {Components}")
           print(f"CompSize[(After): {CompSize}")
       if i < numS:
-        while m <= numB and Sub[m-1] == False:
+        while m < numB and Sub[m] == False:
           m += 1
 
     CompSize = CompSize[:numC]

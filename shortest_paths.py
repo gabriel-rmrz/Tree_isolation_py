@@ -24,8 +24,8 @@ def shortest_paths(cover, Base, Forb):
   EndSet = np.zeros(numB, dtype=np.uint32)
   EndSet[Base] = Base
   while a <= b:
-    N = cover['neighbor'][C+1]
-    d = NeiDis[C+1]
+    N = cover['neighbor'][C]
+    d = NeiDis[C]
     D = PathDis[C] + d
     I = (D < PathDis[N]) & ~Forb[N]
     N = N[I]
@@ -51,8 +51,8 @@ def shortest_paths(cover, Base, Forb):
 
   ## Compute the number of shortest paths going through each set
   PathNum = np.ones(numB, dtype=int)
-  for i in range(1, numB+1):
-    N = PathNei[i-1]
+  for i in range(numB):
+    N = PathNei[i]
     while N > 0:
       PathNum[N] = PathNum[N] + 1
       N = PathNei[N]

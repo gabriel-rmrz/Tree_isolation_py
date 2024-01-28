@@ -106,12 +106,12 @@ def compute_height(P, inputs):
     # Select the lowest 30 cm layer of points
     I = PointInd[q-1: q+t-1]
     J = P[PointInd[q-1:q+t-1],2] < (Bot[np.unravel_index(LexOrd[q-1]-1,Bot.shape,'F')]+0.3)
-    K = BL[LexOrd[q-1]]
+    K = BL[LexOrd[q-1]-1]
     J2 = P[K,2] < (Bot[np.unravel_index(LexOrd[q-1]-1,Bot.shape,'F')] + 0.3)
     if J2:
-      BL[LexOrd[q-1]] = np.concatenate(K[J2],I[J])
+      BL[LexOrd[q-1]-1] = np.concatenate(K[J2],I[J])
     else:
-      BL[LexOrd[q-1]] = I[J]
+      BL[LexOrd[q-1]-1] = I[J]
     if DEBUG:
       print(f"K: {K}")
       print(f"I: {I}")
@@ -142,10 +142,10 @@ def compute_height(P, inputs):
         print(f"k2: {k2}")
       '''
                                   
-      if (np.asarray(BL[k])).any():
-        I = np.argsort(P[BL[k],2])
+      if (np.asarray(BL[k-1])).any():
+        I = np.argsort(P[BL[k-1],2])
         a = np.ceil(len(I)*0.1).astype(int)
-        Q = np.mean(P[BL[k][I[:a]],:],0)
+        Q = np.mean(P[BL[k-1][I[:a]],:],0)
         t = t+1
         Ground[t-1,:] = Q
         '''

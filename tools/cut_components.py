@@ -1,22 +1,20 @@
 DEBUG=True
-def cut_components(Nei,Cut,CutSize,Fal, isFalse):
+import numpy as np
+from tools.unique_elements import unique_elements
+def cut_components(Nei,Cut,CutSize,Fal, isFal):
   # Define the connected components of the Cut
-  if DEBUG:
-    print(f"Checking type and value of CutSize:")
-    print(f"CutSize: {CutSize}")
-    print(f"type(CutSize): {type(CutSize)}")
   if CutSize == [1]:
     # Cut is connected and therfore Study is also
     CompSize = [1]
-    Components = {1: np.array(Cut).astype(int)}
+    Components = {0: np.array(Cut).astype(int)}
     return Components, CompSize
   elif CutSize == [2]:
     I = Nei[Cut[0]] = Cut[1]
     if np.any(I):
-      Components = {1:np.array(Cut).astype(int)}
+      Components = {0:np.array(Cut).astype(int)}
       CompSize = [1]
     else:
-      Components = {1:np.array(Cut[0]).astype(int), 2:np.array(Cut[1]).astype(int)}
+      Components = {0:np.array(Cut[0]).astype(int), 1:np.array(Cut[1]).astype(int)}
       CompSize = [1, 1]
     return Components, CompSize
   elif CutSize == 3:
@@ -25,29 +23,29 @@ def cut_components(Nei,Cut,CutSize,Fal, isFalse):
     K = Nei[Cut[1]] == Cut[2]
     if np.any(I) + np.any(J) + np.any(K) >=2:
       CompSize = [1]
-      Components = {1:np.array(Cut).astype(int)}
+      Components = {0:np.array(Cut).astype(int)}
     elif np.any(I):
-      Components = {1:np.asarray(Cut[:2]).astype(int), 2:np.array(Cut[2]).astype(int)}
+      Components = {0:np.asarray(Cut[:2]).astype(int), 1:np.array(Cut[2]).astype(int)}
       CompSize = [2,1]
     elif np.any(J):
-      Components = {1:np.asarray(Cut[0,2]).astype(int), 2:np.array(Cut[1]).astype(int)}
+      Components = {0:np.asarray(Cut[0,2]).astype(int), 1:np.array(Cut[1]).astype(int)}
       CompSize = [2,1]
     elif np.any(K):
-      Components = {1:np.asarray(Cut[1,2]).astype(int), 2:np.array(Cut[0]).astype(int)}
+      Components = {0:np.asarray(Cut[1,2]).astype(int), 1:np.array(Cut[0]).astype(int)}
       CompSize = [2,1]
     else:
       CompSize[1, 1, 1]
-      Components = {1:np.asarray(Cut[0]).astype(int), 2:np.array(Cut[1]).astype(int), 3:np.array(Cut[2]).astype(int)}
+      Components = {0:np.asarray(Cut[0]).astype(int), 1:np.array(Cut[1]).astype(int), 2:np.array(Cut[2]).astype(int)}
   else: 
     Components = {}
-    CompSize = np.zeros(CutSize)
-    Comp = np.zeros(CutSize)
+    CompSize = np.zeros(CutSize, dtype=np.int32)
+    Comp = np.zeros(CutSize, dtype=np.int32)
     Fal[Cut] = True
     numC = 0
     m = Cut[0]
     i = 0
     while i < CutSize:
-      Added = Nei[m]
+      Added = np.copy(Nei[m])
       I = Fal[Added]
       Added = Added[I]
       a = len(Added)
@@ -55,14 +53,33 @@ def cut_components(Nei,Cut,CutSize,Fal, isFalse):
       Fal[m] = False
       t = 1
       while a > 0:
+        if DEBUG:
+          print(f"a: {a}")
+          print(f"t: {t}")
+          print(f"len(Comp): {len(Comp)}")
         Comp[t+1-1:t+a] = Added
         Fal[Added] = False
         t = t + a
-        Ext = np.concatenate([Nei[key] for key in Nei.keys()])
-        Ext = unique_elemnts(Ext,isFalse)
+        Ext = np.concatenate([Nei[key] for key in Added])
+        #Ext = unique_elemnts(Ext,isFalse)
+        if DEBUG:
+          #print(f"Ext: {Ext}")
+          print(f"len(Ext): {len(Ext)}")
+          print(f"len(np.unique(Ext)): {len(np.unique(Ext))}")
+
+
+        Ext = unique_elements(Ext,isFal)
+        #Ext = np.unique(Ext)
+        if DEBUG:
+          print(f"len(Ext)(unique): {len(Ext)}")
         I = Fal[Ext]
         Added = Ext[I]
         a = len(Added)
+        if DEBUG:
+          print(f"a: {a}")
+          print(f"t: {t}")
+          print(f"Comp: {Comp}")
+          print(f"len(Comp): {len(Comp)}")
       i += t
       numC +=1
       Components[numC] = Comp[:t]
@@ -71,7 +88,6 @@ def cut_components(Nei,Cut,CutSize,Fal, isFalse):
         J = Fal[Cut]
         m = Cut[J]
         m = m[0]
-    Components = Components[:numC]
     CompSize = CompSize[:numC]
     return Components, CompSize
 

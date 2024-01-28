@@ -2,6 +2,7 @@
 Ported from Pasi Raumonen code
 
 # NOTES
+ - For some reason my implementetion of unique_elements (that is use in define_cut-> segments_num_path) is not working propertly. I used np.unique as substitute, but no 100 percent is doing the  same job.
  - The part "Determine the correspondence between the new and the previous components" starting from the line 107 of hte shortest_paths_height.m script is been implemented with variables that doesn't exist and it's not being used.
  - The result after applying the cubical downsamplig is still different. !!! Locate the source
    - Test if the using the operations by blocks could be the cause.
