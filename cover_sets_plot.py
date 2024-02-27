@@ -188,7 +188,9 @@ def cover_sets_plot(P,inputs):
         print(f"MaxDist: {MaxDist}")
         print(f"Radius: {Radius}")
         print(f"")
+      #RandPerm = np.random.default_rng(seed=3).permutation(n)
       RandPerm = np.random.permutation(n)
+      #RandPerm = np.random.default_rng(seed=2).permutation(n)
 
 
     
@@ -202,7 +204,7 @@ def cover_sets_plot(P,inputs):
         print(f"(RandPerm.shape): {(RandPerm.shape)}")
 
       for k in range(n):
-        Q = RandPerm[k] -1
+        Q = RandPerm[k]
         if (NotExa[ind[Q]] and Inside[Q ]):
           points = []#
           for l in [cc[Q,0]-1, cc[Q,0] , cc[Q,0] + 1]:
@@ -313,10 +315,10 @@ def cover_sets_plot(P,inputs):
     B = Ball[i] # the points in the big ball of cover set "i"
     
     
-    I = (BoP[B]  != i)
+    I = ((BoP[B] -1)  != i)
 
     N = B[I] # the points of the B not in the cover set "i"
-    N = BoP[N]-1
+    N = BoP[N] -1
 
     # select the unique elements of N:
     n = len(N)
@@ -367,7 +369,7 @@ def cover_sets_plot(P,inputs):
   print("Neighbor distances determaned")
   print(f"Time elapsed: {f_time -i_time}")
 
-  cover["BallOfPoint"] = BoP
+  cover["BallOfPoint"] = BoP - 1
   cover["inputs"] = inputs
 
   n = sum([len(val) for val in Bal.values()])

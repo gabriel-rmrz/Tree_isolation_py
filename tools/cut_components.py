@@ -1,7 +1,10 @@
-DEBUG=True
+DEBUG=False
 import numpy as np
 from tools.unique_elements import unique_elements
 def cut_components(Nei,Cut,CutSize,Fal, isFal):
+  Fal = np.copy(Fal)
+  isFal = np.copy(isFal)
+  Cut = np.copy(Cut)
   # Define the connected components of the Cut
   if CutSize == [1]:
     # Cut is connected and therfore Study is also
@@ -28,14 +31,15 @@ def cut_components(Nei,Cut,CutSize,Fal, isFal):
       Components = {0:np.asarray(Cut[:2]).astype(int), 1:np.array(Cut[2]).astype(int)}
       CompSize = [2,1]
     elif np.any(J):
-      Components = {0:np.asarray(Cut[0,2]).astype(int), 1:np.array(Cut[1]).astype(int)}
+      Components = {0:np.asarray(Cut[[0,2]]).astype(int), 1:np.array(Cut[1]).astype(int)}
       CompSize = [2,1]
     elif np.any(K):
-      Components = {0:np.asarray(Cut[1,2]).astype(int), 1:np.array(Cut[0]).astype(int)}
+      Components = {0:np.asarray(Cut[[1,2]]).astype(int), 1:np.array(Cut[0]).astype(int)}
       CompSize = [2,1]
     else:
-      CompSize[1, 1, 1]
+      CompSize = [1, 1, 1]
       Components = {0:np.asarray(Cut[0]).astype(int), 1:np.array(Cut[1]).astype(int), 2:np.array(Cut[2]).astype(int)}
+    return Components, CompSize
   else: 
     Components = {}
     CompSize = np.zeros(CutSize, dtype=np.int32)
@@ -53,19 +57,26 @@ def cut_components(Nei,Cut,CutSize,Fal, isFal):
       Fal[m] = False
       t = 1
       while a > 0:
-        if DEBUG:
-          print(f"a: {a}")
-          print(f"t: {t}")
-          print(f"len(Comp): {len(Comp)}")
-        Comp[t+1-1:t+a] = Added
+        #Comp[t+1-1:t+a] = Added
+        '''
+        if (len(Comp)+1 == a + t) and (len(Comp[t+1-1:t+a]) < len(Added)):
+          Comp[t+1-1:t+a] = Added[:a-1]
+          np.append(Comp,Added[a-1])
+        else:
+          Comp[t+1-1:t+a] = Added
+        '''
+        if len(Comp[t+1-1:t+a]) < len(Added):
+          diff = len(Added) - len(Comp[t+1-1:t+a])
+          Comp[t+1-1:t+a] = Added[:a-diff]
+          for d in range(1, diff +1):
+            np.append(Comp, Added[a-d])
+        else:
+          Comp[t+1-1:t+a] = Added
+          
         Fal[Added] = False
         t = t + a
         Ext = np.concatenate([Nei[key] for key in Added])
         #Ext = unique_elemnts(Ext,isFalse)
-        if DEBUG:
-          #print(f"Ext: {Ext}")
-          print(f"len(Ext): {len(Ext)}")
-          print(f"len(np.unique(Ext)): {len(np.unique(Ext))}")
 
 
         Ext = unique_elements(Ext,isFal)
@@ -82,8 +93,8 @@ def cut_components(Nei,Cut,CutSize,Fal, isFal):
           print(f"len(Comp): {len(Comp)}")
       i += t
       numC +=1
-      Components[numC] = Comp[:t]
-      CompSize[numC] = t
+      Components[numC-1] = Comp[:t]
+      CompSize[numC-1] = t
       if i < CutSize:
         J = Fal[Cut]
         m = Cut[J]

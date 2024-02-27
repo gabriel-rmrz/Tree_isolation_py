@@ -12,6 +12,7 @@ Ported from Pasi Raumonen code
 
 
 # TODO
+ - Define type uint that would work as the matlab one when we try to put a negative value in it
  - Check why the Components value in connected_componens.m:80 and segments_paths_height:244 are different, even if they seem to implement the same solution.
  - See if we can use a generic method instead of tools/unique_elements.py
  - Change the objects in the script compute height with the ones comming from matlab to see where the differences come from.

@@ -1,4 +1,4 @@
-DEBUG = True
+DEBUG = False
 import numpy as  np
 import yaml
 from plotting.plot_point_cloud import plot_point_cloud
@@ -50,12 +50,12 @@ def isolate_trees(P, Hei=None, cover=None):
     Hei = Vector giving the heights (in cm) of the points passing the 
     filtering from the ground
     '''
-    Pass, Hei, Ground, Tri = filtering_plot(P,inputs)
+    Pass, Hei, Ground, Tri = filtering_plot(np.copy(P),inputs)
     P = P[Pass,:]
 
   ## 2. Cover the point cloud with patches
   if cover==None:
-    cover  = cover_sets_plot(P,inputs)
+    cover  = cover_sets_plot(np.copy(P),inputs)
 
 
   ## 3. Locate three candidates by selecting stem sections
@@ -67,27 +67,28 @@ def isolate_trees(P, Hei=None, cover=None):
   H = np.asarray(Hei[cover['center']]) # Height of the patches
   Sec = (H > 200) *(H < 300) # Logical vector of patches
   if DEBUG:
-    print(f"H: {H}")
-    print(f"H: {H}")
-    print(f"sum(Sec): {sum(Sec)}")
+    #print(f"H: {H}")
+    #print(f"H: {H}")
+    #print(f"sum(Sec): {sum(Sec)}")
     print(f"len(Sec): {len(Sec)}")
     print(f"len(cover.center): {len(cover['center'])}")
     print(f"len(cover.neighbor): {len(cover['neighbor'])}")
-    print(sum(Sec))
+    #print(sum(Sec))
 
-  StemSec, CompSize = connected_components(cover['neighbor'], Sec, 25)
+  StemSec, CompSize = connected_components(cover['neighbor'], np.copy(Sec), 25)
   if DEBUG:
-    print(f"StemSec[1]: {StemSec[1]}")
-    print(f"StemSec.keys(): {StemSec.keys()}")
+    #print(f"StemSec[1]: {StemSec[1]}")
+    #print(f"StemSec.keys(): {StemSec.keys()}")
     #plot_point_cloud(P[cover['center'][np.concatenate([StemSec[0], StemSec[1], StemSec[2], StemSec[3], StemSec[4], StemSec[5]])],:])
-    plot_point_cloud(P[cover['center'][np.concatenate([StemSec[0], StemSec[1]])],:])
+    plot_point_cloud(P[cover['center'][np.concatenate([StemSec[0], StemSec[1]])],:], "two_stems")
     #plot_point_cloud(P[cover['center'][StemSec[0]],:])
     #plot_point_cloud(P[cover['center'][Sec,:],:])
     #plot_point_cloud(P)
     #plot_segs(P,{1:StemSec[1], 2:StemSec[2]},1,cover["ball"])
   if DEBUG:
-    print(StemSec)
-    print(CompSize)
+    #print(StemSec)
+    #print(CompSize)
+    print(f"len(CompSize): {len(CompSize)}")
   n = len(StemSec)
   print(f"{n} stem sections determined")
   ## NOTICE! Here we have another more sophisticated way to select the stem sections:
@@ -96,7 +97,7 @@ def isolate_trees(P, Hei=None, cover=None):
   # Plot the stem sections
   Ce = P[cover['center'],:]
   sec = (H > 50) *(H < 400) 
-  plot_point_cloud(Ce[sec,:])
+  plot_point_cloud(Ce[sec,:], "centers_50_400")
   #plot_segs(P, StemSec,5, cover['ball'])
 
   ## 4. Determine the shortest path of the patched to the "StemSec"
@@ -127,7 +128,12 @@ def isolate_trees(P, Hei=None, cover=None):
 
   # Determine the shortest paths
   #shortest_paths_height return  PathNum, PathDist, EndSet
-  EndSet, cover, PathLen = shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs)
+  if DEBUG:
+    print(f"type(P): {type(P)}")
+    print(f"type(Hei): {type(Hei)}")
+    print(f"type(Base): {type(Base)}")
+    print(f"type(BaseDist): {type(BaseDist)}")
+  EndSet, cover, PathLen = shortest_paths_height(np.copy(P), cover, np.copy(Hei), np.copy(Base), np.copy(BaseDist), inputs)
 
   if DEBUG:
     print(f"len(EndSet): {len(EndSet)}")
@@ -148,27 +154,15 @@ def isolate_trees(P, Hei=None, cover=None):
     S = StemSec[i]
     n = len(S)
     C = {}
-    if DEBUG:
-      print(f"EndSet : {EndSet}")
-      print(f"S: {S}")
-      print(f"len(EndSet) : {len(EndSet)}")
-      print(f"len(S): {len(S)}")
     for j in range(n):
-      if DEBUG:
-        print(f" S[j-1]: {S[j-1]}")
-        print(f"len(EndSet == S[j-1]): {len(EndSet == S[j-1])}")
-        print(f"len(ind): {len(ind)}")
-        print(f"ind[EndSet == S[j-1]]: {ind[EndSet == S[j-1]]}")
       C[j] = ind[EndSet == S[j]]
-    if DEBUG:
-      print(f"EndSet : {EndSet}")
-      print(f"C (before): {C}")
     T = np.concatenate([C[key] for key in C.keys()])
-    if DEBUG:
-      print(f"T: {T}")
-      print(f"C: {C}")
     Trees[i] = T
     Base[i] = T[H[T] < (min(H[T]) + 0.5)]
+  if DEBUG:
+    plot_point_cloud(P[cover['center'][Trees[1]],:], "1_tree_p5")
+    plot_point_cloud(P[cover['center'][Trees[0]],:], "0_tree_p5")
+    print(f"5: len(Trees): {len(Trees)}")
 
 
   ## 6. Extend the trees downwards with shortest paths
@@ -193,6 +187,12 @@ def isolate_trees(P, Hei=None, cover=None):
       C[j] = S[I]
     Bottom = np.concatenate([C[key] for key in C.keys()]) # The bottom sets
     Trees[i] = np.concatenate([Trees[i], Bottom]) # include the bottom to the tree
+  if DEBUG:
+    plot_point_cloud(P[cover['center'][Trees[1]],:], "1_tree_p6")
+    plot_point_cloud(P[cover['center'][Trees[0]],:], "0_tree_p6")
+    plot_point_cloud(P[cover['center'][Base[1]],:], "1_base_p6")
+    plot_point_cloud(P[cover['center'][Base[0]],:], "0_base_p6")
+    print(f"6: len(Trees): {len(Trees)}")
   
   ## 7. Remove trees that are not connected to the ground of are too short
   # Keep only the trees that are close enough  to the ground level (minimum 
@@ -204,17 +204,26 @@ def isolate_trees(P, Hei=None, cover=None):
   Ind = np.array(range(numT)).astype(np.uint32)
   for i in range(numT):
     T = Trees[i]
-    if (len(T) ==0) or (np.min(H[T]) > 50) or ((np.max(H[T]) - np.min(H[T])) < 500):
+    if DEBUG:
+      print(f"len(T) (== 0?): {len(T)}")
+      print(f"np.min(H[T]) (> 50?) : {np.min(H[T])}")
+      print(f"np.max(H[T]) - np.min(H[T]) (> 500?) : {np.max(H[T]) - np.min(H[T])}")
+    if (len(T) ==0) or (np.min(H[T]) > 100) or (np.max(H[T]) - np.min(H[T])) < 500:
       Keep[i] = False
+      if DEBUG:
+        print(f"Keep[i]: {Keep[i]}")
+        print(f"len(T) ==0: {len(T) ==0}")
+        print(f"np.min(H[T]) > 50: {np.min(H[T]) > 50}")
+        print(f"(np.max(H[T]) - np.min(H[T])) < 500: {(np.max(H[T]) - np.min(H[T])) < 500}")
     else:
       I = H[T] < 50
       Bases[i] = T[I]
   Trees = {key: Trees[key] for key in Ind[Keep] }
   numT = len(Trees)
   Bases = {key: Bases[key] for key in Ind[Keep] }
-  print(f"         {numT} trees isolated")
-  print(f"Trees.keys(): {Trees.keys()}")
-  plot_point_cloud(P[cover['center'][np.concatenate([Trees[0],Trees[1]])],:])
+  #plot_point_cloud(P[cover['center'][np.concatenate([Trees[0],Trees[1]])],:])
+  plot_point_cloud(P[cover['center'][Trees[1]],:], "1_tree")
+  plot_point_cloud(P[cover['center'][Bases[1]],:], "1_base")
   #plot_segs(P,Bases,20,cover["ball"])
 
   ## 8. Segment the trees into stem and branches based on shortest paths
@@ -222,15 +231,17 @@ def isolate_trees(P, Hei=None, cover=None):
   base = np.concatenate([Bases[key] for key in Bases.keys()]) # the bases of the paths
   Forb = np.ones(numB, dtype='bool') # the forbiden sets for the paths
   Forb[np.concatenate([Trees[key] for key in Trees.keys()])] = False
-  PathNum = shortest_paths(cover, base, Forb)
+  if DEBUG:
+    print(f"base: {base}")
+  PathNum, PathDist, EndSet  = shortest_paths(cover, base, np.copy(Forb))
 
   # Segment each tree and select only the stem
-  print(f"Trees.keys(): {Trees.keys()}")
-  print(f"numT: {numT}")
-  for key in Trees.keys():
+  for i in range(numT):
     Forb = np.ones(numB, dtype='bool')
-    Forb[Trees[key]] = False
-    segment =segments_num_path(cover, Bases[key],Forb,PathNum)
+    Forb[Trees[i]] = False
+    segment =segments_num_path(cover, Bases[i],Forb,PathNum)
+    print(f"segment: {segment}")
+
 
   
 

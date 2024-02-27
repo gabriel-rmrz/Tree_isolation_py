@@ -56,24 +56,24 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
   Changes from version 1.1.0 to 1.2.0, 4 Jun 2018:
   1) Corrected the CompSize for cases n = 2 and n = 3.
   '''
-  Fal_i = Fal
+  Fal_i = np.copy(Fal)
   if (len(Sub)==0) or (len(Nei)==0):
     return {}, [] 
   if (len(Sub)<=3) and not isinstance(Sub[0], (np.bool_, bool)) and (Sub[0] > 0) :
     n = len(Sub)
     Components = {}
     if n == 1:
-      Components[0] = np.array(int(Sub))
+      Components[0] = np.array(int(Sub), dtype=np.uint32)
       CompSize = [1]
       return Components, CompSize
     elif n == 2:
       I = Nei[Sub[0]] == Sub[1]
       if np.any(I):
-        Components[0] = np.array(int(Sub))
+        Components[0] = np.array(int(Sub), dtype=np.uint32)
         CompSize = [2]
       else:
-        Components[0] = np.array(int(Sub[0]))
-        Components[1] = np.array(int(Sub[1]))
+        Components[0] = np.array(int(Sub[0]), dtype=np.uint32)
+        Components[1] = np.array(int(Sub[1]), dtype=np.uint32)
         CompSize = [1, 1]
       return Components, CompSize
     elif n == 3:
@@ -81,24 +81,24 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
       J = Nei[Sub[0]] == Sub[2]
       K = Nei[Sub[1]] == Sub[2]
       if np.any(I) + np.any(J) + np.any(K) >= 2:
-        Components[0] = np.array(int(Sub))
+        Components[0] = np.array(int(Sub), dtype=np.uint32)
         CompSize = [3]
-      elif any(I):
-        Components[0] = np.asarray(int(Sub[:2]))
-        Components[1] = np.array(int(Sub[2]))
+      elif np.any(I):
+        Components[0] = np.asarray(int(Sub[:2]), dtype=np.uint32)
+        Components[1] = np.array(int(Sub[2]), dtype=np.uint32)
         CompSize = [2, 1]
-      elif sum(J):
-        Components[0] = np.asarray(int(Sub[[0,2]]))
-        Components[1] = np.array(int(Sub[1]))
+      elif np.any(J):
+        Components[0] = np.asarray(int(Sub[[0,2]]), dtype=np.uint32)
+        Components[1] = np.array(int(Sub[1]), dtype=np.uint32)
         CompSize = [2, 1]
-      elif sum(K):
-        Components[0] = np.array(int(Sub[[1,2]]))
-        Components[1] = np.array(int(Sub[0]))
+      elif np.any(K):
+        Components[0] = np.array(int(Sub[[1,2]]), dtype=np.uint32)
+        Components[1] = np.array(int(Sub[0]), dtype=np.uint32)
         CompSize = [2, 1]
       else:
-        Components[0] = np.array(int(Sub[0]))
-        Components[1] = np.array(int(Sub[1]))
-        Components[2] = np.array(int(Sub[2]))
+        Components[0] = np.array(int(Sub[0]), dtype=np.uint32)
+        Components[1] = np.array(int(Sub[1]), dtype=np.uint32)
+        Components[2] = np.array(int(Sub[2]), dtype=np.uint32)
         CompSize = [1, 1, 1]
       return Components, CompSize
   elif np.any(Sub) or (len(Sub) == 1 and Sub[0] == 0):
@@ -207,7 +207,7 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
           print(f"Comp: {Comp}")
           print(f"Components: {Components}")
           print(f"CompSize: {CompSize}")
-        Components[numC-1] = np.array(Comp[:t])
+        Components[numC-1] = np.array(Comp[:t], dtype=np.uint32)
         CompSize[numC-1] = t
         if DEBUG:
           print(f"Components(After): {Components}")
