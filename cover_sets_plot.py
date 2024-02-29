@@ -61,20 +61,6 @@ def cover_sets_plot(P,inputs):
     direction   Set direction, unit vector, (n_setc x 3)-matrix
     dimension   Dimensionality, (n_setc x 3)-matrix   
   '''
-  if DEBUG:
-    print(f"type(P): {type(P)}")
-    print(f"(P.shape): {(P.shape)}")
-
-    #P = np.transpose(np.asarray(scipy.io.loadmat('debug/cover_sets_plot/P.mat')['P']))
-    print("##############################################")
-    print("##############################################")
-    print(f"READING and setting pointcloud from MATLAB")
-    print("##############################################")
-    print("##############################################")
-
-    P = np.asarray(scipy.io.loadmat('debug/cover_sets_plot/P.mat')['P'])
-    print(f"(P.shape) (technically P_mat): {(P.shape)}")
-
 
   print('  -----------------------')
   print('   Covering point cloud...')
@@ -97,13 +83,14 @@ def cover_sets_plot(P,inputs):
   i_time = time.time()
   numP = len(P[:,0])
   #print(numP)
-  Ball = defaultdict(list) 
+  #Ball = defaultdict(list) 
+  Ball = {} 
   # large balls, used to generate the cover sets and their neighbors:
   Cen = np.zeros(int(1e6), dtype=np.uint32) # the center points of the balls/cover sets
   BoP = np.zeros(numP, dtype=np.uint32) # the balls/cover sets the points belong
-  Ind = np.arange(numP, dtype=np.int32)
+  Ind = np.arange(numP, dtype=np.uint32)
   NotExa = np.ones(numP) # Points not yet examined
-  Dist = float(1e8) * np.ones(numP, dtype=np.float64) # Distance of point to the closest center
+  Dist = 1e8 * np.ones(numP, dtype=np.double) # Distance of point to the closest center
   numB = 0 # Number of sets generated
 
   # Use squared values to avoid square root computations:
@@ -119,10 +106,10 @@ def cover_sets_plot(P,inputs):
   Max = P.max(axis=0) # Maximum coordinates
   
 
-  CC = (np.floor(((P-Min)/inputs['BallRad'])) + 2).astype(int)
+  CC = (np.floor(((P-Min)/inputs['BallRad'])) + 2).astype(np.uint32)
 
   # Number of rectangular cuboids
-  NRectangles = (np.ceil(CC[:,:2].max(axis=0)/NCubes)).astype(int)
+  NRectangles = (np.ceil(CC[:,:2].max(axis=0)/NCubes)).astype(np.uint32)
 
   # Number of BallRad cubes vertically:
   HCubes = np.ceil((Max[2] - Min[2])/inputs['BallRad'])
@@ -180,29 +167,10 @@ def cover_sets_plot(P,inputs):
       # Define the points inside the big volume
       Inside = ~((cc[:,0] == 1) | (cc[:,0] == (NCubes +2)) | (cc[:,1] == 1) | (cc[:,1] == (NCubes +2)))
       # Generate the balls
-      if DEBUG:
-        print(f"len(BoP): {len(BoP)}")
-        print(f"HCubes: {HCubes}")
-        print(f"Max: {Max}")
-        print(f"Min: {Min}")
-        print(f"MaxDist: {MaxDist}")
-        print(f"Radius: {Radius}")
-        print(f"")
-      #RandPerm = np.random.default_rng(seed=3).permutation(n)
-      RandPerm = np.random.permutation(n)
+      RandPerm = (np.random.default_rng(seed=1).permutation(n)).astype(np.uint32)
+      #RandPerm = np.random.permutation(n)
       #RandPerm = np.random.default_rng(seed=2).permutation(n)
-
-
     
-      if DEBUG:
-        print(f"type(RandPerm): {type(RandPerm)}")
-        print(f"(RandPerm.shape): {(RandPerm.shape)}")
-        RandPerm = np.transpose(np.asarray(scipy.io.loadmat('debug/cover_sets_plot/RandPerm.mat')['RandPerm']))
-        RandPerm = RandPerm[:,0].astype(int)
-        print("Technically  RandPerm_mat now")
-        print(f"type(RandPerm): {type(RandPerm)}")
-        print(f"(RandPerm.shape): {(RandPerm.shape)}")
-
       for k in range(n):
         Q = RandPerm[k]
         if (NotExa[ind[Q]] and Inside[Q ]):
@@ -216,8 +184,8 @@ def cover_sets_plot(P,inputs):
                 for part in Partition[(l,m,r)]:
                   #print(part)
                   points.append(part)
-          Q = ind[Q]
-          points = np.asarray(points)
+          Q = (ind[Q]).astype(np.uint32)
+          points = np.asarray(points, dtype=np.uint32)
           #print(points)
           #print(len(points))
 
@@ -251,7 +219,7 @@ def cover_sets_plot(P,inputs):
             L = d < D
             I2 = I[L]
             Dist[I2] = d[L]
-            BoP[I2] = numB
+            BoP[I2] = numB -1
             if isPass and int(numB) ==int(1e6):
               N1 = np.ceil(numP/np.sum(int(NotExa) != 0))*int(2e6)
               Cen[N1] = 0
@@ -266,7 +234,7 @@ def cover_sets_plot(P,inputs):
   '''
   #Ball = { d:Ball[d] for d in set(Ball).intersection(range(numB))}
   #print(Ball)
-  Cen = Cen[:numB]
+  Cen = (Cen[:numB]).astype(np.uint32)
   if DEBUG:
     print(numB)
     exit()
@@ -283,9 +251,9 @@ def cover_sets_plot(P,inputs):
   Ind = np.zeros(numP, dtype=np.uint32)
 
   for i in range(numP):
-    if BoP[i] > 0:
-      Num[BoP[i] -1] = Num[BoP[i]-1]+1
-      Ind[i] = Num[BoP[i] -1] - 1
+    if BoP[i] >= 0:
+      Num[BoP[i]] = Num[BoP[i]]+1
+      Ind[i] = Num[BoP[i]] - 1
     
 
   # Initialization of the Bal
@@ -295,8 +263,8 @@ def cover_sets_plot(P,inputs):
   
   # Define the Bal
   for i in range(numP):
-    if BoP[i] > 0:
-      Bal[BoP[i] - 1][Ind[i]]= i
+    if BoP[i] >= 0:
+      Bal[BoP[i]][Ind[i]]= i
 
   f_time = time.time()
   
@@ -315,10 +283,10 @@ def cover_sets_plot(P,inputs):
     B = Ball[i] # the points in the big ball of cover set "i"
     
     
-    I = ((BoP[B] -1)  != i)
+    I = (BoP[B] != i)
 
     N = B[I] # the points of the B not in the cover set "i"
-    N = BoP[N] -1
+    N = BoP[N]
 
     # select the unique elements of N:
     n = len(N)
@@ -334,7 +302,7 @@ def cover_sets_plot(P,inputs):
     elif n == 2:
       if N[0] == N[1]:
         N = np.array([N[0]])
-    Nei[i] = N
+    Nei[i] = N.astype(np.uint32)
 
   
   # Make the relation symmetric by adding, if needed, A as B's neighbor
@@ -346,7 +314,7 @@ def cover_sets_plot(P,inputs):
       #print(f"N_i: {N_i}")
       #print(f"N_{i}[{j}]: {N_i[j]}")
       K = (Nei[N_i[j]] == (i))
-      if np.sum(K) > 0:
+      if not np.any(K):
          np.append(Nei[N_i[j]],i)
 
   
@@ -369,7 +337,7 @@ def cover_sets_plot(P,inputs):
   print("Neighbor distances determaned")
   print(f"Time elapsed: {f_time -i_time}")
 
-  cover["BallOfPoint"] = BoP - 1
+  cover["BallOfPoint"] = BoP 
   cover["inputs"] = inputs
 
   n = sum([len(val) for val in Bal.values()])

@@ -1,4 +1,4 @@
-DEBUG = False
+DEBUG = True
 import numpy as  np
 import yaml
 from plotting.plot_point_cloud import plot_point_cloud
@@ -160,8 +160,12 @@ def isolate_trees(P, Hei=None, cover=None):
     Trees[i] = T
     Base[i] = T[H[T] < (min(H[T]) + 0.5)]
   if DEBUG:
-    plot_point_cloud(P[cover['center'][Trees[1]],:], "1_tree_p5")
     plot_point_cloud(P[cover['center'][Trees[0]],:], "0_tree_p5")
+    plot_point_cloud(P[cover['center'][Trees[1]],:], "1_tree_p5")
+    plot_point_cloud(P[cover['center'][Trees[2]],:], "2_tree_p5")
+    plot_point_cloud(P[cover['center'][Trees[3]],:], "3_tree_p5")
+    plot_point_cloud(P[cover['center'][Trees[4]],:], "4_tree_p5")
+    plot_point_cloud(P[cover['center'][Trees[5]],:], "5_tree_p5")
     print(f"5: len(Trees): {len(Trees)}")
 
 

@@ -35,13 +35,13 @@ def remove_bottom(P, Points, Hei, inputs):
   # empty of points
   numP = len(P[:,0])
   SQ = inputs['BottomSquare']
-  Min = P[:,:2].min(axis=0).astype(float)
-  Max = P[:,:2].max(axis=0).astype(float)
+  Min = P[:,:2].min(axis=0).astype(np.double)
+  Max = P[:,:2].max(axis=0).astype(np.double)
   nx = int(np.ceil((Max[0]-Min[0])/SQ))
   ny = int(np.ceil((Max[1]-Min[1])/SQ))
   n=3
   Filled = np.zeros((nx,ny,n), dtype='bool')
-  PointInd = np.asarray(range(numP))
+  PointInd = np.asarray(range(numP), dtype=np.uint32)
   I = Hei < n*100
 
   PointInd = PointInd[I]
@@ -62,33 +62,24 @@ def remove_bottom(P, Points, Hei, inputs):
   J3 = R <= 0
   if np.any(J3):
     R[J3] = 1 
-  L = (np.floor((Hei[PointInd]).astype(float)/100.) + 1).astype(int)
+  L = (np.floor((Hei[PointInd]).astype(np.double)/100.) + 1).astype(np.uint32)
   J4 = L > n
   if np.any(J4):
     L[J4] = n 
   J5 = (L <= 0)
-  if DEBUG:
-    print(f"sum(J5): {sum(J5)}")
-    print(f"J5.any(): {J5.any()}")
-    print(f"L[L<=0]: {L[L<=0]}")
-    print(f"L[J5]: {L[J5]}")
-    print(f"R: {R}")
-    print(f"len(R): {len(R)}")
-    print(f"Hei[PointInd][L<=0]: {Hei[PointInd][L<=0]}")
-    print(f"Hei[Hei<0]: {Hei[Hei<0]}")
   if np.any(J5):
     L[J5] = 1
-  LexOrd = (R[:,0] + (R[:,1]-1) *nx +(L-1)*nx*ny).astype(int)
+  LexOrd = (R[:,0] + (R[:,1]-1) *nx +(L-1)*nx*ny).astype(np.uint32)
   Filled[np.unravel_index(LexOrd-1,Filled.shape,'F')] = True
 
   ## Remove bottom points
   Pass = np.ones(numP, dtype='bool')
-  PointInd = np.asarray(range(numP))
+  PointInd = np.asarray(range(numP), dtype=np.uint32)
   p = 1
 
   I = Hei < 100* inputs['BottomHeight']
   PointInd = PointInd[I]
-  R = (np.floor((P[PointInd,:2]-Min)/SQ) + 1).astype(int)
+  R = (np.floor((P[PointInd,:2]-Min)/SQ) + 1).astype(np.uint32)
   J = R[:,0] > nx
   if np.any(J):
     R[J,0] = nx
@@ -112,14 +103,8 @@ def remove_bottom(P, Points, Hei, inputs):
   print(f"Ind: {Ind}")
   print(f"len(Ind): {len(Ind)}")
   Points[Ind[~Pass]] = False
-  H = np.zeros(numP0).astype(np.uint32)
+  H = np.zeros(numP0).astype(np.int32)
   H[Points] = Hei[Pass]
-  if DEBUG:
-    print(min(Hei[Pass]))
-    for h in Hei[Pass]:
-      if h < 0:
-        print("negative height")
-        exit()
   P = P[Pass,:]
   numP2 = len(P[:,0])
   print(f"\t Points before: {numP}")

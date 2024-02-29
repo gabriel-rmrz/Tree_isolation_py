@@ -18,12 +18,6 @@ from collections import defaultdict
 # along with TREEQSM.  If not, see <http://www.gnu.org/licenses/>.
 
 def connected_components(Nei,Sub,MinSize,Fal=None):
-  if DEBUG:
-    print(f"len(Nei): {len(Nei)}")
-    print(f"len(Sub): {len(Sub)}")
-    print(f"sum(Sub): {sum(Sub)}")
-    print(f"type(Nei): {type(Nei)}")
-    print(f"type(Sub): {type(Sub)}")
   '''
   ---------------------------------------------------------------------
   CONNECTED_COMPONENTS.M      Determines the connected components of cover
@@ -63,17 +57,17 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
     n = len(Sub)
     Components = {}
     if n == 1:
-      Components[0] = np.array(int(Sub), dtype=np.uint32)
+      Components[0] = np.array(Sub, dtype=np.uint32)
       CompSize = [1]
       return Components, CompSize
     elif n == 2:
       I = Nei[Sub[0]] == Sub[1]
       if np.any(I):
-        Components[0] = np.array(int(Sub), dtype=np.uint32)
+        Components[0] = np.array(Sub, dtype=np.uint32)
         CompSize = [2]
       else:
-        Components[0] = np.array(int(Sub[0]), dtype=np.uint32)
-        Components[1] = np.array(int(Sub[1]), dtype=np.uint32)
+        Components[0] = np.array(Sub[0], dtype=np.uint32)
+        Components[1] = np.array(Sub[1], dtype=np.uint32)
         CompSize = [1, 1]
       return Components, CompSize
     elif n == 3:
@@ -81,24 +75,24 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
       J = Nei[Sub[0]] == Sub[2]
       K = Nei[Sub[1]] == Sub[2]
       if np.any(I) + np.any(J) + np.any(K) >= 2:
-        Components[0] = np.array(int(Sub), dtype=np.uint32)
+        Components[0] = np.array(Sub, dtype=np.uint32)
         CompSize = [3]
       elif np.any(I):
-        Components[0] = np.asarray(int(Sub[:2]), dtype=np.uint32)
-        Components[1] = np.array(int(Sub[2]), dtype=np.uint32)
+        Components[0] = np.asarray(Sub[:2], dtype=np.uint32)
+        Components[1] = np.array(Sub[2], dtype=np.uint32)
         CompSize = [2, 1]
       elif np.any(J):
-        Components[0] = np.asarray(int(Sub[[0,2]]), dtype=np.uint32)
-        Components[1] = np.array(int(Sub[1]), dtype=np.uint32)
+        Components[0] = np.asarray(Sub[[0,2]], dtype=np.uint32)
+        Components[1] = np.array(Sub[1], dtype=np.uint32)
         CompSize = [2, 1]
       elif np.any(K):
-        Components[0] = np.array(int(Sub[[1,2]]), dtype=np.uint32)
-        Components[1] = np.array(int(Sub[0]), dtype=np.uint32)
+        Components[0] = np.array(Sub[[1,2]], dtype=np.uint32)
+        Components[1] = np.array(Sub[0], dtype=np.uint32)
         CompSize = [2, 1]
       else:
-        Components[0] = np.array(int(Sub[0]), dtype=np.uint32)
-        Components[1] = np.array(int(Sub[1]), dtype=np.uint32)
-        Components[2] = np.array(int(Sub[2]), dtype=np.uint32)
+        Components[0] = np.array(Sub[0], dtype=np.uint32)
+        Components[1] = np.array(Sub[1], dtype=np.uint32)
+        Components[2] = np.array(Sub[2], dtype=np.uint32)
         CompSize = [1, 1, 1]
       return Components, CompSize
   elif np.any(Sub) or (len(Sub) == 1 and Sub[0] == 0):

@@ -38,7 +38,7 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
   UV[Base] = True
   a = 1 # Counts how many unvisited sets have been visited by a shortest path
   b = n # how many unvisited sets there currently are
-  J = 1 # index of the set C (a+J-1)
+  J = 0 # index of the set C (a+J-1)
   PathLen = 1000*np.ones(numB,dtype=np.single)
   PathNei = np.zeros(numB, dtype=np.uint32)
   EndSet = np.zeros(numB, dtype=np.uint32)
@@ -72,8 +72,8 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
       EndSet[N] = EndSet[C]
 
     # Define C as visited and N as unvisited
-    if J>1: 
-      Unvisited[a-J-1-1] = Unvisited[a-1]
+    if J>0: 
+      Unvisited[a-J-1] = Unvisited[a-1]
 
     a += 1
     UV[C] = False
@@ -95,7 +95,7 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
         print(f"PathLen[Unvisited[int(a-1):int(b)]]: {PathLen[Unvisited[int(a-1):int(b)]]}")
     if len(PathLen[Unvisited[int(a-1):int(b)]] > 0):
       J = np.argmin(PathLen[Unvisited[int(a-1):int(b)]])
-      C = Unvisited[a + J -1 -1]
+      C = Unvisited[a + J -1]
   
   ## Iteratively expand trees base on the shortest paths
   # Partition of the cover sets into search space
@@ -273,7 +273,7 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
                 UV[unvisited] = True
                 a = 1
                 b = m 
-                J= 1
+                J= 0
                 while a <=b:
                   N = nei[C]
                   d = NeiDis[C]
@@ -291,11 +291,8 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
                     PathNei[N] = C
                     EndSet[N] = EndSet[C]
                   
-                  if J >1:
-                    Unvisited[a+J-1-1] = Unvisited[a-1]
-                  if DEBUG:
-                    print(f"a : {a}")
-                    print(f"b: {b}")
+                  if J >0:
+                    Unvisited[a+J-1] = Unvisited[a-1]
                   
                   a +=1
                   UV[C] = False
@@ -312,7 +309,7 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
                     print(f"b (after): {b}")
                   if a <=b:
                     J = np.argmin(PathLen[Unvisited[int(a-1):int(b)]])
-                    C = Unvisited[a+J-1-1]
+                    C = Unvisited[a+J-1]
                   else:
                     J = np.array([])
                     C = np.array([])
@@ -342,7 +339,7 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
       UV[Base] = True
       a = 1
       b = n
-      J = 1
+      J = 0
       PathLen = 1000 * np.ones(numB, dtype=np.single) # The path distances
       PathNei = np.zeros(numB, dtype=np.uint32)
       EndSet = np.zeros(numB, dtype=np.uint32)
@@ -361,8 +358,8 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
           PathNei[N] = C
           EndSet[N] = EndSet[C]
         
-        if J >1:
-          Unvisited[a+J-1-1] = Unvisited[a-1]
+        if J >0:
+          Unvisited[a+J-1] = Unvisited[a-1]
         if DEBUG:
           print(f"a : {a}")
           print(f"b: {b}")
@@ -382,7 +379,7 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
           print(f"b (after): {b}")
         if a <=b:
           J = np.argmin(PathLen[Unvisited[int(a-1):int(b)]])
-          C = Unvisited[a+J-1-1]
+          C = Unvisited[a+J-1]
         else:
           J = np.array([])
           C = np.array([])

@@ -110,7 +110,7 @@ def filtering_plot(P, inputs):
     display_time(i_time, ti_time,'\t Cube filtering: ', 1)
 
   ti_time = time.time()
-  Hei, Ground, Tri = compute_height(P, inputs)
+  Hei, Ground, Tri = compute_height(np.copy(P), inputs)
   display_time(i_time, ti_time,'\t Height computation: ', 1)
 
   if inputs['BottomHeight'] > 0:
@@ -120,7 +120,7 @@ def filtering_plot(P, inputs):
 
   if inputs['filt']['PatchDiam'] > 0:
     ti_time = time.time()
-    Points = remove_small_separate_clusters(P,Points,inputs)
+    Points = remove_small_separate_clusters(np.copy(P),Points,inputs)
     display_time(i_time, ti_time,'\t Removing small clusters: ', 1)
 
   Hei = Hei[Points]
