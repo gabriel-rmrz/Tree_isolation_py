@@ -79,7 +79,7 @@ def remove_bottom(P, Points, Hei, inputs):
 
   I = Hei < 100* inputs['BottomHeight']
   PointInd = PointInd[I]
-  R = (np.floor((P[PointInd,:2]-Min)/SQ) + 1).astype(np.uint32)
+  R = (np.floor((P[PointInd,:2]-Min)/SQ) + 1).astype(np.int32)
   J = R[:,0] > nx
   if np.any(J):
     R[J,0] = nx

@@ -1,4 +1,4 @@
-DEBUG=True
+DEBUG=False
 import numpy as np
 
 def component_classification(CompSize, Cont, BaseSize, CutSize):
@@ -7,7 +7,7 @@ def component_classification(CompSize, Cont, BaseSize, CutSize):
   # Class[i] == 1 branch
   # Class[i] == 2 part of the continuation (small uncertain thing)
 
-  numC = CompSize.shape[0]
+  numC = len(CompSize)
   StudySize = sum(CompSize)
   Class = np.ones(numC, dtype=np.int32) # true if a component is a branch to be further segmented
   ContiComp = 0

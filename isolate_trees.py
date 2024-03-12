@@ -1,8 +1,9 @@
-DEBUG = True
+DEBUG = False
 import numpy as  np
 import yaml
 from plotting.plot_point_cloud import plot_point_cloud
 from plotting.plot_segs import plot_segs
+from plotting.plot_tree_structure import plot_tree_structure
 from filtering_plot import filtering_plot
 from cover_sets_plot import cover_sets_plot
 from tools.connected_components import connected_components
@@ -84,7 +85,7 @@ def isolate_trees(P, Hei=None, cover=None):
     #plot_point_cloud(P[cover['center'][StemSec[0]],:])
     #plot_point_cloud(P[cover['center'][Sec,:],:])
     #plot_point_cloud(P)
-    #plot_segs(P,{1:StemSec[1], 2:StemSec[2]},1,cover["ball"])
+    plot_segs(P,{0:StemSec[0], 1:StemSec[1]},1,cover["ball"])
   if DEBUG:
     #print(StemSec)
     #print(CompSize)
@@ -166,6 +167,7 @@ def isolate_trees(P, Hei=None, cover=None):
     plot_point_cloud(P[cover['center'][Trees[3]],:], "3_tree_p5")
     plot_point_cloud(P[cover['center'][Trees[4]],:], "4_tree_p5")
     plot_point_cloud(P[cover['center'][Trees[5]],:], "5_tree_p5")
+    #plot_segs(P,Trees,1,cover["ball"],'segs')
     print(f"5: len(Trees): {len(Trees)}")
 
 
@@ -244,7 +246,9 @@ def isolate_trees(P, Hei=None, cover=None):
     Forb = np.ones(numB, dtype='bool')
     Forb[Trees[i]] = False
     segment =segments_num_path(cover, Bases[i],Forb,PathNum)
-    print(f"segment: {segment}")
+    #print(f"segment: {segment}")
+    plot_segs(P,{0:Trees[i]},1,cover["ball"],f"tree_{i}")
+    plot_tree_structure(P,cover,segment,1,10,0, f"segs_{i}")
 
 
   

@@ -207,7 +207,6 @@ def segments_num_path(cover, Base, Forb, PathNum):
   segment['segments'] = Segs
   segment['parent'] = SPar
   segment['children'] = SChi
-  print(f"segment: {segment}")
 
   return segment
 

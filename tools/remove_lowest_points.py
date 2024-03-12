@@ -9,39 +9,37 @@ def remove_lowest_points(P, Points):
   # Remove (some of) the ghost points under the ground level
   ## Basic parameters
   numP = len(P[:,0])
-  Min = P.min(axis=0).astype(float)
-  Max = P.max(axis=0).astype(float)
+  Min = P.min(axis=0).astype(np.double)
+  Max = P.max(axis=0).astype(np.double)
   
   # TODO: Add the SQ parameter to the inputs dictionary in the yaml file.
-  SQ = 5 # side lengh of the rectanglees for ghost point search
-  N = (Max - Min)/SQ # Number of rectangles in the x-y directions
-  if np.floor(N[0]) == np.ceil(N[0]):
-    N[0] = N[0] + 1
+  SQ = 5 # side lengh of the rectangles for ghost point search
+  Nx = (Max[0] - Min[0])/SQ # Number of rectangles in the x-y directions
+  Ny = (Max[1] - Min[1])/SQ # Number of rectangles in the x-y directions
+  if np.floor(Nx) == np.ceil(Nx):
+    Nx = Nx + 1
   else:
-    N[0] = np.ceil(N[0])
-  if np.floor(N[1]) == np.ceil(N[1]):
-    N[1] = N[1] + 1
+    Nx = np.ceil(Nx)
+  if np.floor(Ny) == np.ceil(Ny):
+    Ny = Ny + 1
   else:
-    N[1] = np.ceil(N[1])
-  N = N.astype(int)
-  if DEBUG:
-    print(f"N: {N}")
+    Ny = np.ceil(Ny)
   
   ## Search for the lowest points
 
   Par = defaultdict(list)
-  R = (np.floor((P[:,:2] - Min[:2])/SQ) + 1).astype(int)
-  LexOrd = R[:,0] + N[0]*(R[:,1]-1)
+  R = np.floor((P[:,:2] - Min[:2])/SQ) + 1
+  LexOrd = R[:,0] + Nx*(R[:,1]-1)
   I = np.argsort(LexOrd)
   if DEBUG:
     print(f"R: {R}")
     print(f"len(R): {len(R)}")
-  R = R[I,:]
+  R = (R[I,:]).astype(np.int32)
   if DEBUG:
     print(f"R: {R}")
     print(f"len(R): {len(R)}")
   LexOrd = np.sort(LexOrd)
-  PointInd = np.asarray(range(numP))
+  PointInd = np.asarray(range(numP), dtype=np.uint32)
   PointInd = PointInd[I]
   #Points = np.asarray(Points[I])
   n=len(R)
@@ -61,23 +59,17 @@ def remove_lowest_points(P, Points):
   Pass = np.ones(numP, dtype='bool')
   if DEBUG:
     print(f"######################")
-    print(f"N[0]: {N[0]}")
-    print(f"range(1,N[0]): {range(1,N[0])}")
     print(f"Par.keys(): {Par.keys()}")
     '''
     for key in Par.keys():
       print(f"len(Par): {len(Par[tuple(key)])}")
     '''
-  for i in range(1, N[0] +1):
-    for j in range(1, N[1] +1):
+  for i in range(int(Nx)):
+    for j in range(int(Ny)):
       points = Par[tuple([i,j])]
-      if DEBUG:
-        print(f"pre i: {i}")
-        print(f"pre j: {j}")
-      if points.any():
+      if np.any(points):
         N2, Edges = np.histogramdd(P[points,2], 100)
 
-        #CS = np.cumsum(N)/len(points)*100
         CS = np.cumsum(N2)/len(points)*100
         k=0
         while CS[k] < 1:
@@ -85,20 +77,9 @@ def remove_lowest_points(P, Points):
         if k > 0:
           k = k - 1
         Pass[points] = P[points,2] > Edges[0][k]
-        if DEBUG:
-          #print(f"Edges: {Edges}")
-          #print(f"len(Edges[0]): {len(Edges[0])}")
-          print(f"i: {i}")
-          print(f"j: {j}")
-          #print(f"CS: {CS}")
-          print(f"len(CS): {len(CS)}")
-          print(f"k: {k}")
-          print(f"Edges[0][k]: {Edges[0][k]}")
-  if DEBUG:
-    print(f"sum(Pass): {sum(Pass)}")
 
   numP0 = len(Points)
-  Ind = np.asarray(range(numP0))
+  Ind = np.asarray(range(numP0), dtype=np.uint32)
   Ind = Ind[Points]
   Points[Ind[~Pass]] = False
   P = P[Pass,:]

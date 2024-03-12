@@ -32,9 +32,9 @@ def remove_small_separate_clusters(P, Points, inputs):
   for key in K:
     Ball = cover['ball'][key]
     Remove_temp = np.concatenate((Ball, Remove_temp),axis=0)
-  Remove = np.asarray(Remove_temp).astype(int)
+  Remove = np.asarray(Remove_temp).astype(np.uint32)
   numP = len(Points)
-  Ind = np.asarray(range(numP)).astype(int)
+  Ind = np.asarray(range(numP)).astype(np.uint32)
   Ind = Ind[Points]
   Points[Ind[Remove]] = False
 

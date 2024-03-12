@@ -8,8 +8,8 @@ def cubical_down_sampling(P,Points,inputs):
 
   # The vertices of the big cub containing P
   
-  Min = P.min(axis=0).astype(float)
-  Max = P.max(axis=0).astype(float)
+  Min = P.min(axis=0).astype(np.double)
+  Max = P.max(axis=0).astype(np.double)
   if DEBUG:
     print(f"Min: {Min}")
     print(f"Max: {Max}")
@@ -19,18 +19,18 @@ def cubical_down_sampling(P,Points,inputs):
   # of the big cube
 
   Passed = np.zeros(numP0, dtype="bool")
-  N = (np.ceil((Max-Min)/inputs["SamplingCubeSize"])+1).astype(int)
+  N = (np.ceil((Max-Min)/inputs["SamplingCubeSize"])+1).astype(np.double)
   if DEBUG:
     print(f"N: {N}")
 
   # Compute the cube coordinates of the points
-  C = (np.floor((P -Min)/inputs["SamplingCubeSize"])+1).astype(int)
+  C = np.floor((P -Min)/inputs["SamplingCubeSize"])+1.
   # Compute the lexicographical order of the cubes
   LexOrd = C[:,0] + (C[:,1] -1)*N[0] + (C[:,2] - 1) * N[0]*N[1]
   LexOrd, I = np.unique(LexOrd, return_index=True, axis=0)
   Passed[I] = True 
   P= P[Passed]
-  Ind = np.asarray(range(numP0))
+  Ind = np.asarray(range(numP0)).astype(np.uint32)
   Ind = Ind[Points]
   Points[Ind[~Passed]] = False
   numP = len(P[:,0])

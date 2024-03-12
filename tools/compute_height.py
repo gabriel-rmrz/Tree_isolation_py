@@ -40,8 +40,8 @@ def compute_height(P, inputs):
 
   N[0] = N[0] + 2
   N[1] = N[1] + 2
-  N = N.astype(np.uint32)
 
+  N = N.astype(np.int32)
   Bot = np.zeros(N[:2]) + Min[2] + 100
 
   BL = defaultdict(list)
@@ -50,8 +50,8 @@ def compute_height(P, inputs):
   # Define Bot-values
 
   
-  R = np.floor((P[:,:2]-Min[:2])/sq) + 2
-  LexOrd = (R[:,0] + (R[:,1] -1)*N[0]).astype(np.uint32)
+  R = np.floor((P[:,:2]-Min[:2])/sq) + 2.
+  LexOrd = (R[:,0] + (R[:,1] -1)*N[0]).astype(np.int32)
   I = np.argsort(LexOrd)
   LexOrd = np.sort(LexOrd)
   PointInd = PointInd[I]
@@ -63,7 +63,7 @@ def compute_height(P, inputs):
     t = 1
     while q+t <= m and LexOrd[q-1+t] == LexOrd[q-1]:
       t = t+1
-    a = (P[PointInd[q-1: q+t-1],2]).min().astype(float)
+    a = (P[PointInd[q-1: q+t-1],2]).min().astype(np.double)
        
     if Bot[np.unravel_index(LexOrd[q-1]-1,Bot.shape,'F')] > a:
       Bot[np.unravel_index(LexOrd[q-1]-1,Bot.shape,'F')] = a
@@ -88,7 +88,7 @@ def compute_height(P, inputs):
       k=(j-1)*N[0]+i
       if (np.asarray(BL[k-1])).any():
         I = np.argsort(P[BL[k-1],2])
-        a = np.ceil(len(I)*0.1).astype(np.uint32)
+        a = np.ceil(len(I)*0.1).astype(np.int32)
         Q = np.mean(P[BL[k-1][I[:a]],:],0)
         t = t+1
         Ground[t-1,:] = Q
@@ -123,12 +123,12 @@ def compute_height(P, inputs):
 
   t = 0
   for i in range(1, n+1):
-    T = (Tri[i-1,:]).astype(np.uint32)
+    T = (Tri[i-1,:]).astype(np.int32)
     Q = Ground[T,:]
     V1 = Q[1,:]- Q[0,:]
     V2 = Q[2,:]- Q[0,:]
-    n1 = (np.ceil(np.linalg.norm(V1,1)/SQ*2)).astype(np.uint32)
-    n2 = (np.ceil(np.linalg.norm(V2,1)/SQ*2)).astype(np.uint32)
+    n1 = (np.ceil(np.linalg.norm(V1,1)/SQ*2)).astype(np.int32)
+    n2 = (np.ceil(np.linalg.norm(V2,1)/SQ*2)).astype(np.int32)
     n1 = max(n1,n2)
     t = t+1
     G[t-1,:] = Q[0,:]
