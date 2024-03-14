@@ -16,16 +16,20 @@ def remove_small_separate_clusters(P, Points, inputs):
   
   # Determine the components
   Comps, CompSize = connected_components(cover['neighbor'], [], inputs['FiltClusterSize'])
+  '''
   Comps_temp=[]
   for key in Comps.keys():
     print(Comps[key])
     Comps_temp = np.concatenate((Comps_temp,Comps[key]),axis=0) 
   Comps = np.asarray(Comps_temp)
+  '''
+  Comps = np.concatenate([Comps[key] for key in Comps.keys()])
   numB = len(cover['ball'])
 
   Rem = np.ones(numB, dtype='bool')
   if Comps:
      Rem[Comps] = False
+  '''
   K = np.asarray(list(cover['ball'].keys()))
   K = K[Rem]
   Remove_temp = np.asarray([])
@@ -33,6 +37,8 @@ def remove_small_separate_clusters(P, Points, inputs):
     Ball = cover['ball'][key]
     Remove_temp = np.concatenate((Ball, Remove_temp),axis=0)
   Remove = np.asarray(Remove_temp).astype(np.uint32)
+  '''
+  Remove = np.concatenate([Ball[key] for key in Rem])
   numP = len(Points)
   Ind = np.asarray(range(numP)).astype(np.uint32)
   Ind = Ind[Points]
@@ -42,10 +48,6 @@ def remove_small_separate_clusters(P, Points, inputs):
   print(f"\t Points before: {len(P[:,0])}")
   print(f"\t Filtered points: {sum(Remove)}")
   print(f"\t Points left: {sum(Points)}")
-  
-
-
-
 
   return Points
 

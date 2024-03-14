@@ -1,4 +1,4 @@
-DEBUG = False
+DEBUG = True
 import numpy as  np
 import yaml
 from plotting.plot_point_cloud import plot_point_cloud
@@ -228,9 +228,21 @@ def isolate_trees(P, Hei=None, cover=None):
   numT = len(Trees)
   Bases = {key: Bases[key] for key in Ind[Keep] }
   #plot_point_cloud(P[cover['center'][np.concatenate([Trees[0],Trees[1]])],:])
-  plot_point_cloud(P[cover['center'][Trees[1]],:], "1_tree")
-  plot_point_cloud(P[cover['center'][Bases[1]],:], "1_base")
   #plot_segs(P,Bases,20,cover["ball"])
+  if DEBUG:
+    plot_point_cloud(P[cover['center'][Trees[0]],:], "0_tree_p7")
+    plot_point_cloud(P[cover['center'][Trees[1]],:], "1_tree_p7")
+    plot_point_cloud(P[cover['center'][Trees[2]],:], "2_tree_p7")
+    plot_point_cloud(P[cover['center'][Trees[3]],:], "3_tree_p7")
+    plot_point_cloud(P[cover['center'][Trees[4]],:], "4_tree_p7")
+    plot_point_cloud(P[cover['center'][Trees[5]],:], "5_tree_p7")
+
+    plot_point_cloud(P[cover['center'][Bases[0]],:], "0_base_p7")
+    plot_point_cloud(P[cover['center'][Bases[1]],:], "1_base_p7")
+    plot_point_cloud(P[cover['center'][Bases[2]],:], "2_base_p7")
+    plot_point_cloud(P[cover['center'][Bases[3]],:], "3_base_p7")
+    plot_point_cloud(P[cover['center'][Bases[4]],:], "4_base_p7")
+    plot_point_cloud(P[cover['center'][Bases[5]],:], "5_base_p7")
 
   ## 8. Segment the trees into stem and branches based on shortest paths
   # Determine the shortest paths

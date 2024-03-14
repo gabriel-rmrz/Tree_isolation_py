@@ -86,7 +86,7 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
         Components[1] = np.array(Sub[1], dtype=np.uint32)
         CompSize = [2, 1]
       elif np.any(K):
-        Components[0] = np.array(Sub[[1,2]], dtype=np.uint32)
+        Components[0] = np.asarray(Sub[[1,2]], dtype=np.uint32)
         Components[1] = np.array(Sub[0], dtype=np.uint32)
         CompSize = [2, 1]
       else:
@@ -206,10 +206,11 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
         if DEBUG:
           print(f"Components(After): {Components}")
           print(f"CompSize[(After): {CompSize}")
-      if i < numS:
+      if i < numS-1:
         while m < numB and Sub[m] == False:
           m += 1
 
+    Components = {key:Components[key] for key in range(numC)}
     CompSize = CompSize[:numC]
     if DEBUG:
       print(f"Components(last): {Components}")

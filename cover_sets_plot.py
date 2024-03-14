@@ -167,7 +167,7 @@ def cover_sets_plot(P,inputs):
       # Define the points inside the big volume
       Inside = ~((cc[:,0] == 1) | (cc[:,0] == (NCubes +2)) | (cc[:,1] == 1) | (cc[:,1] == (NCubes +2)))
       # Generate the balls
-      sd = 3
+      sd = 1
       RandPerm = (np.random.default_rng(seed=sd).permutation(n)).astype(np.uint32)
       #RandPerm = np.random.permutation(n)
       #RandPerm = np.random.default_rng(seed=2).permutation(n)

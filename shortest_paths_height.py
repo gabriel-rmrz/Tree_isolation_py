@@ -14,7 +14,7 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
   numB = len(cover['ball']) # number of patches
   Ce = P[cover['center'],:] # the centers of the patches
   ind = np.asarray(range(numB)).astype(int) # indices from 0 to numB-1
-  Hei = np.asarray(Hei[cover['center']]/100.).astype(float) # the heights of the patches (in m)
+  Hei = np.asarray(Hei[cover['center']]/100.).astype(np.double) # the heights of the patches (in m)
   GD = inputs['GD0'] # Intial gap distance that can be brigded over with a new link
   DHRel = inputs['DHRel0'] # Initial maximum allowed path_lenght/height relation
 

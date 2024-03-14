@@ -72,7 +72,7 @@ def segments_num_path(cover, Base, Forb, PathNum):
 
   # Segmenting stops when there are no more segments to be found
 
-  while Continue and (b < numB):
+  while Continue and (b < numB-1):
     # Update the forbiden sets
     Forb[Seg[numL-1]] = True
 
