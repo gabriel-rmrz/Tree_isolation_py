@@ -10,7 +10,7 @@ from plotting.plot_point_cloud import plot_point_cloud
 
 
 
-def cover_sets_plot(P,inputs):
+def cover_sets_plot(P,inputs, test=False):
 
   '''
   ---------------------------------------------------------------------
@@ -167,9 +167,14 @@ def cover_sets_plot(P,inputs):
       # Define the points inside the big volume
       Inside = ~((cc[:,0] == 1) | (cc[:,0] == (NCubes +2)) | (cc[:,1] == 1) | (cc[:,1] == (NCubes +2)))
       # Generate the balls
-      sd = 1
-      RandPerm = (np.random.default_rng(seed=sd).permutation(n)).astype(np.uint32)
-      #RandPerm = np.random.permutation(n)
+      #sd = 1
+      #RandPerm = (np.random.default_rng(seed=sd).permutation(n)).astype(np.uint32)
+      if test:
+        RandPerm = scipy.io.loadmat('RandPerm.mat')
+        print(f"RandPerm.keys(): {RandPerm.keys()}")
+        RandPerm = RandPerm['RandPerm']-1
+      else:
+        RandPerm = np.random.permutation(n)
       #RandPerm = np.random.default_rng(seed=2).permutation(n)
     
       for k in range(n):
@@ -314,7 +319,7 @@ def cover_sets_plot(P,inputs):
     for j in range(len(N_i)):
       #print(f"N_i: {N_i}")
       #print(f"N_{i}[{j}]: {N_i[j]}")
-      K = (Nei[N_i[j]] == (i))
+      K = (Nei[N_i[j]] == i)
       if not np.any(K):
          np.append(Nei[N_i[j]],i)
 

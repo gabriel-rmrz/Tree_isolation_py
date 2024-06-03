@@ -76,21 +76,11 @@ def cut_components(Nei,Cut,CutSize,Fal, isFal):
         Fal[Added] = False
         t = t + a
         Ext = np.concatenate([Nei[key] for key in Added])
-        #Ext = unique_elemnts(Ext,isFalse)
-
-
         Ext = unique_elements(Ext,isFal)
         #Ext = np.unique(Ext)
-        if DEBUG:
-          print(f"len(Ext)(unique): {len(Ext)}")
         I = Fal[Ext]
         Added = Ext[I]
         a = len(Added)
-        if DEBUG:
-          print(f"a: {a}")
-          print(f"t: {t}")
-          print(f"Comp: {Comp}")
-          print(f"len(Comp): {len(Comp)}")
       i += t
       numC +=1
       Components[numC-1] = Comp[:t]

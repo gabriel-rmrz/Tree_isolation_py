@@ -1,9 +1,10 @@
-DEBUG= False
+DEBUG= True
 import numpy as np
 from tools.define_cut import define_cut
 from tools.cut_components import cut_components
 from tools.study_components import study_components
 from tools.component_classification import component_classification
+from plotting.plot_segs import plot_segs
 def segments_num_path(cover, Base, Forb, PathNum):
   '''
   ---------------------------------------------------------------------
@@ -40,7 +41,7 @@ def segments_num_path(cover, Base, Forb, PathNum):
 
   Nei = cover["neighbor"]
   numB = len(Nei)                              # the number of cover sets
-  a = max(200000 , numB/100)                     # Estimate the maximum number of segments
+  a = int(np.max([200000 , numB/100]))                     # Estimate the maximum number of segments
   SBas = {}                                    # The segment bases found
   Segs = {}                                    # The segment found
   SPar = np.zeros((a,2), dtype=np.uint32)      # The parent segment of each segment
@@ -48,7 +49,7 @@ def segments_num_path(cover, Base, Forb, PathNum):
 
   # Initialize SChi
   SChi[0] = np.zeros(5000, dtype=np.uint32)
-  C = np.zeros(200)
+  C = np.zeros(2000)
   for i in range(1, a):
     SChi[i] = C
   NChi = np.zeros(a, dtype=np.uint32)  # Number of child segments found for each segment
@@ -60,8 +61,8 @@ def segments_num_path(cover, Base, Forb, PathNum):
   SBas[s] = Base
   Seg = {}             # The cover set layers in the current segment
   Seg[0] = Base
-
   ForbAll = np.copy(Fal)      # The forbiden sets
+
   ForbAll[Forb] = True
   ForbAll[Base] = True
   Forb = ForbAll     # The forbidden sets for the segment under expansion
@@ -88,6 +89,7 @@ def segments_num_path(cover, Base, Forb, PathNum):
     #numC = 0
     if CutSize > 0:
       CutComps, _ = cut_components(Nei, Cut, CutSize, Fal, Fal)
+
       if DEBUG:
         print(f"CutComps: {CutComps}")
         print(f"len(CutComps): {len(CutComps)}")
@@ -101,6 +103,9 @@ def segments_num_path(cover, Base, Forb, PathNum):
           print(f"############################")
           print(f"numC: {numC}")
           print(f"len(Cont) {len(Cont)}")
+          print(f"Bases: {Bases}")
+          print(f"len(Bases) {len(Bases)}")
+          print(f"len(StudyComps) {len(StudyComps)}")
         numC = len(Cont)
     else:
       numC = 0
@@ -121,7 +126,7 @@ def segments_num_path(cover, Base, Forb, PathNum):
       # Classify the components of the Study region
       Class = component_classification(CompSize, Cont, BaseSize, CutSize)
       if DEBUG:
-        print(f"Class: {Class}")
+        print(f"len(Class): {len(Class)}")
 
       # Use the bumber of paths to decide which component is the continuation
       N = np.zeros(numC, dtype=np.int32)
@@ -145,7 +150,7 @@ def segments_num_path(cover, Base, Forb, PathNum):
           Forb[StudyComps[i]] = True
           J = Forb[Cut]
           Cut = Cut[~J]
-          b = b+1
+          b += 1
           SBas[b] = Base
           SPar[b,:] = np.array([s, numL-1])
           NChi[s] = NChi[s] + 1
@@ -200,8 +205,11 @@ def segments_num_path(cover, Base, Forb, PathNum):
     else:
       SChi[i] = np.asarray([], dtype=np.uint32)
     S = Segs[i]
+    '''
     for j in range(len(S)):
       S[j] = (S[j]).astype(np.uint32)
+    '''
+    S = {key: (S[key]).astype(np.uint32) for key in S.keys()}
     Segs[i] = S
   segment = {}
   segment['segments'] = Segs

@@ -1,3 +1,7 @@
+TEST_ISO= False
+TEST_FILT=False
+TEST_COV=True
+
 import numpy as np
 import pandas as pd
 import yaml
@@ -10,6 +14,11 @@ from tools.remove_bottom import remove_bottom
 from tools.compute_height import compute_height 
 from pycallgraph import PyCallGraph
 from pycallgraph.output import GraphvizOutput
+
+import matplotlib.pyplot as plt
+import scipy.io
+from plotting.plot_segs import plot_segs
+
 
 def get_pointcloud(las, isRGB=False):
   point_data = np.stack([las.X, las.Y, las.Z], axis=0).transpose((1,0))
@@ -34,12 +43,43 @@ def main():
   #P = 0.001 * (np.asarray(P.points).transpose()).astype(float)
   P = 0.001 * np.stack([las.X, las.Y, las.Z], axis=0).transpose((1,0))
 
+  if TEST_ISO:
+    isolate_trees(P)
+
+
+  if TEST_FILT:
+    Pass, Hei, Ground, Tri = filtering_plot(P,inputs['inputs'])
+    #Pass, Hei, Ground, Tri = filtering_plot(np.copy(P),inputs)
+    nPass = np.count_nonzero(Pass)
+    print(f"nPass: {nPass}")
+    #counts, bins = np.histogram(Hei)    
+    #plt.stairs(counts, bins)
+    plt.hist(Hei,bins=100)
+    plt.savefig('plots/Hei.png')
+    plt.clf()
+    Hei_mat = scipy.io.loadmat('Hei.mat')
+    print(Hei_mat['Hei'])
+    plt.hist(Hei_mat['Hei'].flatten(),bins=100)
+    plt.savefig('plots/Hei_mat.png')
+
+  if TEST_COV:
+    '''
+    Pass, Hei, Ground, Tri = filtering_plot(P,inputs['inputs'])
+    P = P[Pass,:]
+    cover = cover_sets_plot(P,inputs['inputs'])
+    print(f"Plotting...")
+    plot_segs(P,cover["neighbor"],1,cover["ball"], 'cover')
+    '''
+    P_mat = scipy.io.loadmat('P.mat')
+    P_mat = P_mat['P']-1 
+    #cover_mat = cover_sets_plot(P_mat,inputs['inputs'],test=True)
+    cover_mat = cover_sets_plot(P_mat,inputs['inputs'])
+    plot_segs(P_mat,cover_mat["neighbor"],1,cover_mat["ball"], 'cover_mat')
+
+
   #print(inputs['inputs'])
 
 
-  #cover_sets_plot(P,inputs['inputs'])
-  #filtering_plot(P,inputs['inputs'])
-  isolate_trees(P)
   #remove_bottom(P,np.array([0]),np.array([0]),inputs['inputs'])
   #compute_height(P,inputs['inputs'])
 

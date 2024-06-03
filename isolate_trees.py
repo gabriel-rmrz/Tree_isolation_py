@@ -85,7 +85,7 @@ def isolate_trees(P, Hei=None, cover=None):
     #plot_point_cloud(P[cover['center'][StemSec[0]],:])
     #plot_point_cloud(P[cover['center'][Sec,:],:])
     #plot_point_cloud(P)
-    plot_segs(P,{0:StemSec[0], 1:StemSec[1]},1,cover["ball"])
+    plot_segs(P,{0:StemSec[0], 1:StemSec[1]},1,cover["ball"], 'two_stems')
   if DEBUG:
     #print(StemSec)
     #print(CompSize)
@@ -210,56 +210,47 @@ def isolate_trees(P, Hei=None, cover=None):
   Ind = np.array(range(numT)).astype(np.uint32)
   for i in range(numT):
     T = Trees[i]
-    if DEBUG:
-      print(f"len(T) (== 0?): {len(T)}")
-      print(f"np.min(H[T]) (> 50?) : {np.min(H[T])}")
-      print(f"np.max(H[T]) - np.min(H[T]) (> 500?) : {np.max(H[T]) - np.min(H[T])}")
     if (len(T) ==0) or (np.min(H[T]) > 100) or (np.max(H[T]) - np.min(H[T])) < 500:
       Keep[i] = False
-      if DEBUG:
-        print(f"Keep[i]: {Keep[i]}")
-        print(f"len(T) ==0: {len(T) ==0}")
-        print(f"np.min(H[T]) > 50: {np.min(H[T]) > 50}")
-        print(f"(np.max(H[T]) - np.min(H[T])) < 500: {(np.max(H[T]) - np.min(H[T])) < 500}")
     else:
       I = H[T] < 50
       Bases[i] = T[I]
   Trees = {key: Trees[key] for key in Ind[Keep] }
   numT = len(Trees)
   Bases = {key: Bases[key] for key in Ind[Keep] }
-  #plot_point_cloud(P[cover['center'][np.concatenate([Trees[0],Trees[1]])],:])
-  #plot_segs(P,Bases,20,cover["ball"])
-  if DEBUG:
-    plot_point_cloud(P[cover['center'][Trees[0]],:], "0_tree_p7")
-    plot_point_cloud(P[cover['center'][Trees[1]],:], "1_tree_p7")
-    plot_point_cloud(P[cover['center'][Trees[2]],:], "2_tree_p7")
-    plot_point_cloud(P[cover['center'][Trees[3]],:], "3_tree_p7")
-    plot_point_cloud(P[cover['center'][Trees[4]],:], "4_tree_p7")
-    plot_point_cloud(P[cover['center'][Trees[5]],:], "5_tree_p7")
-
-    plot_point_cloud(P[cover['center'][Bases[0]],:], "0_base_p7")
-    plot_point_cloud(P[cover['center'][Bases[1]],:], "1_base_p7")
-    plot_point_cloud(P[cover['center'][Bases[2]],:], "2_base_p7")
-    plot_point_cloud(P[cover['center'][Bases[3]],:], "3_base_p7")
-    plot_point_cloud(P[cover['center'][Bases[4]],:], "4_base_p7")
-    plot_point_cloud(P[cover['center'][Bases[5]],:], "5_base_p7")
 
   ## 8. Segment the trees into stem and branches based on shortest paths
   # Determine the shortest paths
   base = np.concatenate([Bases[key] for key in Bases.keys()]) # the bases of the paths
   Forb = np.ones(numB, dtype='bool') # the forbiden sets for the paths
   Forb[np.concatenate([Trees[key] for key in Trees.keys()])] = False
-  if DEBUG:
-    print(f"base: {base}")
   PathNum, PathDist, EndSet  = shortest_paths(cover, base, np.copy(Forb))
+  if DEBUG:
+    print(f"PathNum: {PathNum}")
+    print(f"len(PathNum): {len(PathNum)}")
+    print(f"len(cover['ball']): {len(cover['ball'])}")
+    print(f"type(cover['ball']): {type(cover['ball'])}")
+    print(f"len(cover['center']): {len(cover['center'])}")
+    print(f"type(cover['center']): {type(cover['center'])}")
+    print(f"len(cover['neighbor']): {len(cover['neighbor'])}")
+    print(f"type(cover['neighbor']): {type(cover['neighbor'])}")
+    print(f"len(cover['NeiDis']): {len(cover['NeiDis'])}")
+    print(f"type(cover['NeiDis']): {type(cover['NeiDis'])}")
+    print(f"len(cover['BallOfPoint']): {len(cover['BallOfPoint'])}")
+    print(f"type(cover['BallOfPoint']): {type(cover['BallOfPoint'])}")
+    print(f"len(cover['inputs']): {len(cover['inputs'])}")
+    print(f"type(cover['inputs']): {type(cover['inputs'])}")
+    print(f"cover['inputs']: {cover['inputs']}")
+
 
   # Segment each tree and select only the stem
   for i in range(numT):
     Forb = np.ones(numB, dtype='bool')
     Forb[Trees[i]] = False
     segment =segments_num_path(cover, Bases[i],Forb,PathNum)
-    #print(f"segment: {segment}")
     plot_segs(P,{0:Trees[i]},1,cover["ball"],f"tree_{i}")
+    print(f"segment: {segment}")
+    #plot_segs(P,segment['segments'][0],1,cover["ball"],f"segs_{i}")
     plot_tree_structure(P,cover,segment,1,10,0, f"segs_{i}")
 
 
