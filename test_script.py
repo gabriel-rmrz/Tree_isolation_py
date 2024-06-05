@@ -1,7 +1,7 @@
 TEST_ISO= False
 TEST_FILT=False
 TEST_COV=True
-
+DEBUG=False
 import numpy as np
 import pandas as pd
 import yaml
@@ -12,8 +12,8 @@ from filtering_plot import filtering_plot
 from isolate_trees import isolate_trees
 from tools.remove_bottom import remove_bottom
 from tools.compute_height import compute_height 
-from pycallgraph import PyCallGraph
-from pycallgraph.output import GraphvizOutput
+#from pycallgraph import PyCallGraph
+#from pycallgraph.output import GraphvizOutput
 
 import matplotlib.pyplot as plt
 import scipy.io
@@ -42,6 +42,9 @@ def main():
   #P = get_pointcloud(las, isRGB=True)
   #P = 0.001 * (np.asarray(P.points).transpose()).astype(float)
   P = 0.001 * np.stack([las.X, las.Y, las.Z], axis=0).transpose((1,0))
+  if DEBUG:
+    print(f"type(P): {type(P)}")
+    exit()
 
   if TEST_ISO:
     isolate_trees(P)
@@ -63,7 +66,6 @@ def main():
     plt.savefig('plots/Hei_mat.png')
 
   if TEST_COV:
-    '''
     Pass, Hei, Ground, Tri = filtering_plot(P,inputs['inputs'])
     P = P[Pass,:]
     cover = cover_sets_plot(P,inputs['inputs'])
@@ -75,6 +77,7 @@ def main():
     #cover_mat = cover_sets_plot(P_mat,inputs['inputs'],test=True)
     cover_mat = cover_sets_plot(P_mat,inputs['inputs'])
     plot_segs(P_mat,cover_mat["neighbor"],1,cover_mat["ball"], 'cover_mat')
+    '''
 
 
   #print(inputs['inputs'])
@@ -85,10 +88,10 @@ def main():
 
   '''
   # Configuration of the output graph
-  graphviz = GraphvizOutput()
-  graphviz.output_file = 'graph.png'
-  with PyCallGraph(output=graphviz):
-    isolate_trees(P)
+  # graphviz = GraphvizOutput()
+  # graphviz.output_file = 'graph.png'
+  #with PyCallGraph(output=graphviz):
+  isolate_trees(P)
   '''
 
 

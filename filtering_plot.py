@@ -1,3 +1,4 @@
+DEBUG=True
 import time
 import numpy as np
 
@@ -85,12 +86,20 @@ def filtering_plot(P, inputs):
   bound = np.asarray(inputs["bound"])
   Points = np.ones(numP0, dtype='bool')
   # Restrict the plot size
+  if DEBUG:
+    print(f"pre rs: type(Points): {type(Points)}")
+    print(f"pre rs: type(P): {type(P)}")
   if bound[0][0] != 0:
     ti_time = time.time()
     Points = restrict_size(P, inputs)
+    if DEBUG:
+      print(f"type(Points): {type(Points)}")
     P = P[Points]
 
     display_time(i_time, ti_time,'\t Size restriction:', 1)
+  if DEBUG:
+    print(f"pre cds: type(Points): {type(Points)}")
+    print(f"pre cds: type(P): {type(P)}")
   
   if inputs['SamplingCubeSize'] > 0:
     ## Cubical downsampling
@@ -101,16 +110,29 @@ def filtering_plot(P, inputs):
   ## Remove the lowest points
   # (possible "ghost" points clearly below the ground level) TODO: Check carefully this
   ti_time = time.time()
+  if DEBUG:
+    print(f"pre rlp: type(Points): {type(Points)}")
+    print(f"pre rlp: type(P): {type(P)}")
   P, Points = remove_lowest_points(P, Points)
   display_time(i_time, ti_time,'\t Removing lowest points:', 1)
   
+  if DEBUG:
+    print(f"pre cdf: type(Points): {type(Points)}")
+    print(f"pre cdf: type(P): {type(P)}")
   if inputs['CubeSizeDensity'] > 0:
     ti_time = time.time()
     P, Points = cubical_density_filtering(P, Points, inputs)
     display_time(i_time, ti_time,'\t Cube filtering: ', 1)
-
   ti_time = time.time()
+  if DEBUG:
+    print(f"pre ch: type(Points): {type(Points)}")
+    print(f"pre ch: type(P): {type(P)}")
   Hei, Ground, Tri = compute_height(np.copy(P), inputs)
+  if DEBUG:
+    print(f"post ch: type(Hei): {type(Hei)}")
+    print(f"post ch: type(Ground): {type(Ground)}")
+    print(f"post ch: type(Tri): {type(Tri)}")
+    exit()
   display_time(i_time, ti_time,'\t Height computation: ', 1)
 
   if inputs['BottomHeight'] > 0:

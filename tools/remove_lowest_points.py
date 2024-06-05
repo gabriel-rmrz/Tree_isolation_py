@@ -13,7 +13,7 @@ def remove_lowest_points(P, Points):
   Max = P.max(axis=0).astype(np.double)
   
   # TODO: Add the SQ parameter to the inputs dictionary in the yaml file.
-  SQ = 5 # side lengh of the rectangles for ghost point search
+  SQ = 5. # side lengh of the rectangles for ghost point search
   Nx = (Max[0] - Min[0])/SQ # Number of rectangles in the x-y directions
   Ny = (Max[1] - Min[1])/SQ # Number of rectangles in the x-y directions
   if np.floor(Nx) == np.ceil(Nx):
@@ -77,6 +77,11 @@ def remove_lowest_points(P, Points):
         if k > 0:
           k = k - 1
         Pass[points] = P[points,2] > Edges[0][k]
+        if DEBUG:
+          print(f"N2: {N2}")
+          print(f"Edges: {Edges}")
+          print(f"CS: {CS}")
+          exit()
 
   numP0 = len(Points)
   Ind = np.asarray(range(numP0), dtype=np.uint32)

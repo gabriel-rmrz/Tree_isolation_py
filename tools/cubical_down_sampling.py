@@ -6,7 +6,7 @@ def cubical_down_sampling(P,Points,inputs):
   # Downsamples the given point cloud by selecting one point for each
   # cube od side length CubeSize
 
-  # The vertices of the big cub containing P
+  # The vertices of the big cube containing P
   
   Min = P.min(axis=0).astype(np.double)
   Max = P.max(axis=0).astype(np.double)

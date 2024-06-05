@@ -1,13 +1,5 @@
-DEBUG=False
+DEBUG=True
 
-if DEBUG:
-  dir_mat_files='debug/compute_height'
-  dir_plots='debug/compute_height/plots'
-  def print2darray(arr):
-    for i in arr:
-      for j in i: 
-        print(f"{j:.4f}", end=' ')
-      print()
 
 import scipy.io
 import numpy as np
@@ -27,31 +19,38 @@ def compute_height(P, inputs):
 
   # Define grid dimensions for the ground level
 
-  N = (Max-Min)/sq # Number of rectangles in x,y directions
+  # Number of rectangles in x,y directions
+  #N = (Max-Min)/sq 
+  Nx = (Max[0] - Min[0])/sq
+  Ny = (Max[1] - Min[1])/sq
+  
 
-  if np.floor(N[0]) == np.ceil(N[0]):
-    N[0] = N[0] + 1
+  if np.floor(Nx) == np.ceil(Nx):
+    Nx = Nx + 1
   else:
-    N[0] = np.ceil(N[0])
-  if np.floor(N[1]) == np.ceil(N[1]):
-    N[1] = N[1] + 1
+    Nx = np.ceil(Nx)
+  if np.floor(Ny) == np.ceil(Ny):
+    Ny = Ny + 1
   else:
-    N[1] = np.ceil(N[1])
+    Ny = np.ceil(Ny)
 
-  N[0] = N[0] + 2
-  N[1] = N[1] + 2
+  Nx = int(Nx + 2)
+  Ny = int(Ny + 2)
 
-  N = N.astype(np.int32)
-  Bot = np.zeros(N[:2]) + Min[2] + 100
+  #N = N.astype(np.int32)
+  Bot = np.zeros((Nx, Ny)) + Min[2] + 100
+  if DEBUG:
+    print(f"Bot: {Bot}")
 
-  BL = defaultdict(list)
+  #BL = defaultdict(list)
+  BL = {}
   PointInd = np.asarray(range(numP), dtype=np.uint32)
 
   # Define Bot-values
 
   
   R = np.floor((P[:,:2]-Min[:2])/sq) + 2.
-  LexOrd = (R[:,0] + (R[:,1] -1)*N[0]).astype(np.int32)
+  LexOrd = (R[:,0] + (R[:,1] -1)*Nx).astype(np.int32)
   I = np.argsort(LexOrd)
   LexOrd = np.sort(LexOrd)
   PointInd = PointInd[I]
@@ -64,28 +63,26 @@ def compute_height(P, inputs):
     while q+t <= m and LexOrd[q-1+t] == LexOrd[q-1]:
       t = t+1
     a = (P[PointInd[q-1: q+t-1],2]).min().astype(np.double)
-       
     if Bot[np.unravel_index(LexOrd[q-1]-1,Bot.shape,'F')] > a:
       Bot[np.unravel_index(LexOrd[q-1]-1,Bot.shape,'F')] = a
-
     # Select the lowest 30 cm layer of points
     I = PointInd[q-1: q+t-1]
     J = P[PointInd[q-1:q+t-1],2] < (Bot[np.unravel_index(LexOrd[q-1]-1,Bot.shape,'F')]+0.3)
-    K = BL[LexOrd[q-1]-1]
-    J2 = P[K,2] < (Bot[np.unravel_index(LexOrd[q-1]-1,Bot.shape,'F')] + 0.3)
-    if J2:
-      BL[LexOrd[q-1]-1] = np.concatenate(K[J2],I[J])
-    else:
-      BL[LexOrd[q-1]-1] = I[J]
+    BL[LexOrd[q-1]-1] = I[J]
     q = q + t
+  if DEBUG:
+    print(f"Bot: {Bot}")
+
   # Define Ground, a grid of ground level point as the mean of the 10%
   # lowest points of the lowest 30 cm
   t = 0
-  Ground = np.zeros([N[0]*N[1],3])
+  Ground = np.zeros([Nx*Ny,3])
+  if DEBUG:
+    print(f"Ground: {Ground}")
 
-  for i in range(2,N[0]):
-    for j in range(2,N[1]):
-      k=(j-1)*N[0]+i
+  for i in range(2,Nx):
+    for j in range(2,Ny):
+      k=(j-1)*Nx+i
       if (np.asarray(BL[k-1])).any():
         I = np.argsort(P[BL[k-1],2])
         a = np.ceil(len(I)*0.1).astype(np.int32)
@@ -93,20 +90,22 @@ def compute_height(P, inputs):
         t = t+1
         Ground[t-1,:] = Q
 
-
         if i == 2:
           t = t+1
           Ground[t-1,:] = Q-sq*np.asarray([1, 0, 0])
-        elif i == (N[0] -1):
+        elif i == (Nx -1):
           t = t+1
           Ground[t-1,:] = Q+sq*np.asarray([1, 0, 0])
         if j == 2:
           t = t+1
           Ground[t-1,:] = Q-sq*np.asarray([0, 1, 0])
-        elif j == (N[1] -1):
+        elif j == (Ny -1):
           t = t+1
           Ground[t-1,:] = Q+sq*np.asarray([0, 1, 0])
   Ground = Ground[:t,:]
+  if DEBUG:
+    print(f"Ground: {Ground}")
+    exit()
 
   
   # Triangulate the ground points
@@ -141,10 +140,6 @@ def compute_height(P, inputs):
     if t > 0.75*b:
       b = np.ceil(n/i)*b
       G[b,2] = 0
-    if DEBUG:
-      print(f"n1 after: {n1}")
-      print(f"b after: {b}")
-      print(f"V: {V}")
   G = G[:t,:]
 
   # Define height of the points
@@ -165,11 +160,6 @@ def compute_height(P, inputs):
   nx = int(nx)
   ny = int(ny)
 
-  if DEBUG:
-    print(f"nx: {nx}")
-    print(f"ny: {ny}")
-    print(f"Min: {Min}")
-    print(f"Max: {Max}")
   
   Bot = np.zeros([nx,ny])
   R = np.floor((G[:,:2]-Min)/SQ)+1

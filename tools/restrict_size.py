@@ -7,7 +7,7 @@ def restrict_size(P,inputs):
   Points = np.zeros(numP, dtype='bool') # The points passing the filtering
   if len(bound[0]) == 1:
     print("---------")
-    print(f"Restrict the point cloud into {2*bound[0]}m diameter plot")
+    print(f"Restrict the point cloud into {2*bound[0][0]}m  diameter plot")
     #Points = np.zeros(numP, dtype='bool') # The points passing the filtering
     # Filter the points in blocks of 1e7 points
 
