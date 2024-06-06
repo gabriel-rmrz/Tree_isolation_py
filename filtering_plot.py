@@ -132,7 +132,6 @@ def filtering_plot(P, inputs):
     print(f"post ch: type(Hei): {type(Hei)}")
     print(f"post ch: type(Ground): {type(Ground)}")
     print(f"post ch: type(Tri): {type(Tri)}")
-    exit()
   display_time(i_time, ti_time,'\t Height computation: ', 1)
 
   if inputs['BottomHeight'] > 0:
@@ -140,6 +139,10 @@ def filtering_plot(P, inputs):
     P, Points, Hei = remove_bottom(P,Points,Hei,inputs)
     display_time(i_time, ti_time,'\t Removing bottom: ', 1)
 
+  if DEBUG:
+    print(f"post ch: type(Hei): {type(Hei)}")
+    print(f"post ch: type(Points): {type(Points)}")
+    print(f"post ch: type(P): {type(P)}")
   if inputs['filt']['PatchDiam'] > 0:
     ti_time = time.time()
     Points = remove_small_separate_clusters(np.copy(P),Points,inputs)

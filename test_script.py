@@ -1,6 +1,6 @@
-TEST_ISO= False
+TEST_ISO= True
 TEST_FILT=False
-TEST_COV=True
+TEST_COV= False
 DEBUG=False
 import numpy as np
 import pandas as pd

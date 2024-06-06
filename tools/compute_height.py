@@ -1,4 +1,4 @@
-DEBUG=True
+DEBUG=False
 
 
 import scipy.io
@@ -105,7 +105,6 @@ def compute_height(P, inputs):
   Ground = Ground[:t,:]
   if DEBUG:
     print(f"Ground: {Ground}")
-    exit()
 
   
   # Triangulate the ground points
@@ -175,6 +174,7 @@ def compute_height(P, inputs):
   R = np.floor((P[:,:2]-Min[:2])/SQ) + 1
   LexOrd = (R[:,0] + (R[:,1] -1) * nx).astype(np.uint32)
   SortOrd = np.argsort(LexOrd)
+  LexOrd = np.sort(LexOrd)
   PointInd = PointInd[SortOrd]
   R = R[SortOrd,:]
   q = 1
@@ -198,13 +198,28 @@ def compute_height(P, inputs):
         bot = Bot[min1:(max1+1), min2:(max2+1)]
       bot = np.mean(bot[bot != 0])
       Hei[PointInd[q-1:q+t-1]] = (P[PointInd[q-1:q+t-1],2] - bot)*100
+      if DEBUG:
+        print('here1')
+        exit()
     else:
       Hei[PointInd[q-1:q+t-1]] = (P[PointInd[q-1:q+t-1],2] - Bot[np.unravel_index(LexOrd[q-1]-1,Bot.shape,'F')])*100
-
-
+      if DEBUG:
+        print('here2')
+    if DEBUG:
+      print(q)
+      print(f"Hei: {Hei}")
+      #print(f"(P[PointInd[q-1:q+t-1],2] - bot)*100: {(P[PointInd[q-1:q+t-1],2] - bot)*100}")
     q = q+t
   
   Hei[Hei < 0] = 0
+  if DEBUG:
+    print(f"len(Ground): {len(Ground)}")
+    print(f"len(Tri): {len(Tri)}")
+    np.savetxt("Hei.txt", Hei, fmt='%d')
+    np.savetxt("SortOrd.txt", SortOrd, fmt='%d')
+    np.savetxt("Bot.txt", Bot, fmt='%d')
+    print(f"len(Hei): {(Hei)}")
+    exit()
 
   return Hei, Ground, Tri
 

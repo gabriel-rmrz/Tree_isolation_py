@@ -53,10 +53,11 @@ def isolate_trees(P, Hei=None, cover=None):
     '''
     Pass, Hei, Ground, Tri = filtering_plot(np.copy(P),inputs)
     P = P[Pass,:]
-
   ## 2. Cover the point cloud with patches
   if cover==None:
     cover  = cover_sets_plot(np.copy(P),inputs)
+  if DEBUG:
+    exit()
 
 
   ## 3. Locate three candidates by selecting stem sections
