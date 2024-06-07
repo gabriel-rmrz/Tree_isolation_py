@@ -8,10 +8,10 @@ def cubical_density_filtering(P,Points, inputs):
 
   CubeSize = inputs['CubeSizeDensity']
   numP = len(P[:,0])
-  Min = P.min(axis=0).astype(float)
-  Max = P.max(axis=0).astype(float)
+  Min = P.min(axis=0).astype(np.double)
+  Max = P.max(axis=0).astype(np.double)
   
-  N = (np.ceil((Max-Min)/CubeSize)).astype(float)
+  N = (np.ceil((Max-Min)/CubeSize)).astype(np.double)
 
   if np.floor(N[0]) == np.ceil(N[0]):
     N[0] = N[0] + 1

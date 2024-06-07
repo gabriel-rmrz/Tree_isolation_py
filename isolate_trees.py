@@ -108,7 +108,7 @@ def isolate_trees(P, Hei=None, cover=None):
   print('\t -------------------------------------')
   # Compute the shortest paths, first with the height restrictions.
   # The proceess also identifies gaps in the grah and creates new links
-  H = (Hei[cover['center']]/100).astype(float) # The height of the patches in meters
+  H = (Hei[cover['center']]/100).astype(np.double) # The height of the patches in meters
   # Define the stem sections as the base/starting
             # point for the shortest paths
   '''
@@ -119,7 +119,7 @@ def isolate_trees(P, Hei=None, cover=None):
   Base = np.concatenate([StemSec[a] for a in StemSec.keys()])
   
 
-  BaseDist = (Hei[Base]/100).astype(float) # Path length at the base is the height
+  BaseDist = (Hei[Base]/100).astype(np.double) # Path length at the base is the height
 
   # Restriction and iteration parameters  for the shortest path computation
   inputs['GD0'] = 0.1

@@ -327,7 +327,7 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
 
       ## Partition of cover sets into search space
       Partition, CC, info = cubical_partition(Ce, GD)
-      CC = CC.astype(float)
+      CC = CC.astype(np.double)
       Voxels = CC[:,0] + info[3]*(CC[:,1] -1) + info[3]*info[4]*(CC[:,2] -1)
 
       ## Determine the shortest paths again

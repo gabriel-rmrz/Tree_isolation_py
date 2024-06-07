@@ -1,4 +1,4 @@
-DEBUG=False
+DEBUG=True
 import time
 import numpy as np
 #import pandas as pd
@@ -76,8 +76,6 @@ def cover_sets_plot(P,inputs, test=False):
   #     P = double(P);
   # end
 
-  if DEBUG:
-    plot_point_cloud(P)
   
 
   i_time = time.time()
@@ -86,7 +84,7 @@ def cover_sets_plot(P,inputs, test=False):
   #Ball = defaultdict(list) 
   Ball = {} 
   # large balls, used to generate the cover sets and their neighbors:
-  Cen = np.zeros(int(1e6), dtype=np.uint32) # the center points of the balls/cover sets
+  Cen = np.zeros(numP, dtype=np.uint32) # the center points of the balls/cover sets
   BoP = np.zeros(numP, dtype=np.uint32) # the balls/cover sets the points belong
   Ind = np.arange(numP, dtype=np.uint32)
   NotExa = np.ones(numP) # Points not yet examined
@@ -166,6 +164,11 @@ def cover_sets_plot(P,inputs, test=False):
       
       # Define the points inside the big volume
       Inside = ~((cc[:,0] == 1) | (cc[:,0] == (NCubes +2)) | (cc[:,1] == 1) | (cc[:,1] == (NCubes +2)))
+      if DEBUG:
+        print(f"Inside: {Inside}")
+        print(f"len(Inside): {len(Inside)}")
+        print(f"sum(Inside): {sum(Inside)}")
+        exit()
       # Generate the balls
       #sd = 1
       #RandPerm = (np.random.default_rng(seed=sd).permutation(n)).astype(np.uint32)
@@ -185,8 +188,6 @@ def cover_sets_plot(P,inputs, test=False):
             for m in [cc[Q,1]-1, cc[Q,1] , cc[Q,1] + 1]:
               for r in [cc[Q,2]-1, cc[Q,2] , cc[Q,2] + 1]:
                 #if((l,m,r) in Partition.keys()):
-                if DEBUG:
-                  print(f"(l,m,r): {(l,m,r)}")
                 for part in Partition[(l,m,r)]:
                   #print(part)
                   points.append(part)
@@ -211,25 +212,27 @@ def cover_sets_plot(P,inputs, test=False):
               print(f"Im here, numB: {numB}")
           '''
 
-          if sum(J2) >= inputs['nmin']:
+          if np.count_nonzero(J2) >= inputs['nmin']:
             #print(len(J2))
             #print(len(points))
             I = points[J2]
             d = dist[J2]
             J3 = dist < MaxDist 
             NotExa[points[J3]] = False
-            numB = numB + 1
-            Ball[numB-1] = I 
-            Cen[numB-1] = Q
+            Ball[numB] = I 
+            Cen[numB] = Q
             D = Dist[I]
             L = d < D
             I2 = I[L]
             Dist[I2] = d[L]
-            BoP[I2] = numB -1
+            BoP[I2] = numB 
+            numB = numB + 1
+            '''
             if isPass and int(numB) ==int(1e6):
               N1 = np.ceil(numP/np.sum(int(NotExa) != 0))*int(2e6)
               Cen[N1] = 0
               isPass = False
+            '''
             if not(numB%int(1e6)):
               print(f"{numB} {round(np.count_nonzero([not elem for elem in NotExa])/numP * 100)}")
               print(f"{f_time - i_time} {round(numP/np.count_nonzero([not elem for elem in NotExa]) * t)}")
@@ -241,9 +244,6 @@ def cover_sets_plot(P,inputs, test=False):
   #Ball = { d:Ball[d] for d in set(Ball).intersection(range(numB))}
   #print(Ball)
   Cen = (Cen[:numB]).astype(np.uint32)
-  if DEBUG:
-    print(numB)
-    exit()
 
   f_time = time.time()
   print('Balls and centers generated')
