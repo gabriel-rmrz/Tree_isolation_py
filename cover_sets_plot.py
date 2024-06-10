@@ -127,13 +127,14 @@ def cover_sets_plot(P,inputs, test=False):
       ind = Ind[J] # the points
       
       cc = CC[J,:] # cube cordinates of the points
-      n = len(cc) # Number of points
+      n = cc.shape[0] # Number of points
       # correct the coordinates:
       cc[:,0] = cc[:,0] - (i-1) * NCubes # cube cordinates of the points
       cc[:,1] = cc[:,1] - (j-1) * NCubes # cube cordinates of the points
       S =  cc[:,0] + (NCubes + 2)*(cc[:,1]-1) + ((NCubes + 2)**2)*(cc[:,2] -1)
       Ord = np.argsort(S)
-      S = np.sort(S)
+      #S = np.sort(S)
+      S = S[Ord]
 
       Partition = defaultdict(list) 
       #Partition = {} 
@@ -164,11 +165,6 @@ def cover_sets_plot(P,inputs, test=False):
       
       # Define the points inside the big volume
       Inside = ~((cc[:,0] == 1) | (cc[:,0] == (NCubes +2)) | (cc[:,1] == 1) | (cc[:,1] == (NCubes +2)))
-      if DEBUG:
-        print(f"Inside: {Inside}")
-        print(f"len(Inside): {len(Inside)}")
-        print(f"sum(Inside): {sum(Inside)}")
-        exit()
       # Generate the balls
       #sd = 1
       #RandPerm = (np.random.default_rng(seed=sd).permutation(n)).astype(np.uint32)
@@ -258,7 +254,7 @@ def cover_sets_plot(P,inputs, test=False):
 
   for i in range(numP):
     if BoP[i] >= 0:
-      Num[BoP[i]] = Num[BoP[i]]+1
+      Num[BoP[i]] += 1
       Ind[i] = Num[BoP[i]] - 1
     
 
@@ -322,7 +318,6 @@ def cover_sets_plot(P,inputs, test=False):
       K = (Nei[N_i[j]] == i)
       if not np.any(K):
          np.append(Nei[N_i[j]],i)
-
   
   f_time = time.time()
   print('Neighbors defined')
@@ -349,5 +344,4 @@ def cover_sets_plot(P,inputs, test=False):
   n = sum([len(val) for val in Bal.values()])
   print(f"      {numB} cover sets, {numP -n} points not covered")
   return cover
-
 

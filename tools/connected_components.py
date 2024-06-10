@@ -1,4 +1,4 @@
-DEBUG= False
+DEBUG= True
 import numpy as np
 from collections import defaultdict
 
@@ -53,7 +53,9 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
   Fal_i = np.copy(Fal)
   if (len(Sub)==0) or (len(Nei)==0):
     return {}, [] 
-  if (len(Sub)<=3) and not isinstance(Sub[0], (np.bool_, bool)) and (Sub[0] > 0) :
+  if DEBUG:
+    print(Sub[0])
+  if (len(Sub)<=3) and not isinstance(Sub[0], (np.bool_, bool)) and ((Sub[0] + 1) > 0) : # Added the + 1 to Sub[0] because we are using indices starting from 0.
     n = len(Sub)
     Components = {}
     if n == 1:
@@ -95,13 +97,13 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
         Components[2] = np.array(Sub[2], dtype=np.uint32)
         CompSize = [1, 1, 1]
       return Components, CompSize
-  elif np.any(Sub) or (len(Sub) == 1 and Sub[0] == 0):
+  elif np.any(Sub) or (len(Sub) == 1 and (Sub[0] + 1) == 0):
 
     numB = len(Nei)
     numS = 0 
     if Fal_i == None:
       Fal = np.zeros(numB, dtype='bool')
-    if (len(Sub) == 1) and (Sub[0] ==0):
+    if (len(Sub) == 1) and (Sub[0] + 1 ==0):
       # All the cover sets
       numS = numB
       if Fal_i == None:
@@ -124,6 +126,7 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
         print(f"We are here!")
         print(f"Counting non zero values of sub")
         print(f"numS: {numS}")
+        print(f"Sub: {Sub}")
 
 
 
@@ -131,7 +134,7 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
     CompSize = np.zeros(numS, dtype=np.uint32)
     numC = 0
     m = 0
-    while  not Sub[m]:
+    while not Sub[m]:
       m = m+1
     i = 0
     Comp = np.zeros(numS, dtype=np.uint32)
@@ -193,28 +196,19 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
 
       i += t
       if t>= MinSize:
+        Components[numC] = np.array(Comp[:t], dtype=np.uint32)
+        CompSize[numC] = t
         numC += 1
-        if DEBUG:
-          print("#######################")
-          print(f"Comp[:t]: {Comp[:t]}")
-          print(f"Comp[:t+1]: {Comp[:t+1]}")
-          print(f"Comp: {Comp}")
-          print(f"Components: {Components}")
-          print(f"CompSize: {CompSize}")
-        Components[numC-1] = np.array(Comp[:t], dtype=np.uint32)
-        CompSize[numC-1] = t
-        if DEBUG:
-          print(f"Components(After): {Components}")
-          print(f"CompSize[(After): {CompSize}")
-      if i < numS-1:
+      if i < numS:
         while m < numB and Sub[m] == False:
           m += 1
 
-    Components = {key:Components[key] for key in range(numC)}
-    CompSize = CompSize[:numC]
+    '''
     if DEBUG:
-      print(f"Components(last): {Components}")
-      print(f"CompSize[(last): {CompSize}")
+      print(f"len(Components): {len(Components)}")
+    Components = {key:Components[key] for key in range(numC)}
+    '''
+    CompSize = CompSize[:numC]
     return Components, CompSize
 
   else:

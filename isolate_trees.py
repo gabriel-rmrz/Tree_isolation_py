@@ -56,8 +56,6 @@ def isolate_trees(P, Hei=None, cover=None):
   ## 2. Cover the point cloud with patches
   if cover==None:
     cover  = cover_sets_plot(np.copy(P),inputs)
-  if DEBUG:
-    exit()
 
 
   ## 3. Locate three candidates by selecting stem sections
@@ -78,6 +76,7 @@ def isolate_trees(P, Hei=None, cover=None):
     #print(sum(Sec))
 
   StemSec, CompSize = connected_components(cover['neighbor'], np.copy(Sec), 25)
+
   if DEBUG:
     #print(f"StemSec[1]: {StemSec[1]}")
     #print(f"StemSec.keys(): {StemSec.keys()}")
@@ -87,6 +86,7 @@ def isolate_trees(P, Hei=None, cover=None):
     #plot_point_cloud(P[cover['center'][Sec,:],:])
     #plot_point_cloud(P)
     plot_segs(P,{0:StemSec[0], 1:StemSec[1]},1,cover["ball"], 'two_stems')
+    #exit()
   if DEBUG:
     #print(StemSec)
     #print(CompSize)
