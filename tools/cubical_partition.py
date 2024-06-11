@@ -15,7 +15,7 @@ import numpy as np
  You should have received a copy of the GNU General Public License
  along with TREEQSM.  If not, see <http://www.gnu.org/licenses/>.
 '''
-def cubical_partition(P, EL, nargout=3, NE=3):
+def cubical_partition(P, EL, NE=3, method=1):
   '''
   Partitions the input point cloud into cubes.
   Inputs:
@@ -35,8 +35,6 @@ def cubical_partition(P, EL, nargout=3, NE=3):
                 and Cubes gives each cell its array-index
   '''
 
-  if NE is None:
-    NE = 3
 
   # The vertice of the big cube containing P
   Min = np.min(P, axis=0)
@@ -44,7 +42,7 @@ def cubical_partition(P, EL, nargout=3, NE=3):
 
   # Number of cubes with the edge length "EdgeLength" in the sides
   # of the big cube
-  N = np.ceil((Max-Min)/EL)+2*NE+1
+  N = np.ceil((Max-Min)/EL)+2.*NE+1.
 
   while 8*N[0]*N[1]*N[2] > 4e9:
     EL = 1.1*EL
@@ -58,14 +56,14 @@ def cubical_partition(P, EL, nargout=3, NE=3):
 
   # Sorts the points according a lexicographical order
   LexOrd = CubeCoord[:,0] + N[0]* (CubeCoord[:,1] -1) + N[0]*N[1]*(CubeCoord[:,2] -1)
-  CubeCoord = CubeCoord.astype(np.uint32)
+  CubeCoord = CubeCoord.astype(np.uint16)
   SortOrd = (np.argsort(LexOrd)).astype(np.uint32)
   LexOrd = (LexOrd[SortOrd]).astype(np.uint32)
 
   # Define "Partition"
   Partition = {}
   numP = len(P[:,0]) # Number of points
-  if nargout<= 3:
+  if method== 1:
     p = 1 # The index of the point under comparison
     while p <= numP:
       t = 1

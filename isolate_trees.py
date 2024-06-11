@@ -75,7 +75,7 @@ def isolate_trees(P, Hei=None, cover=None):
     print(f"len(cover.neighbor): {len(cover['neighbor'])}")
     #print(sum(Sec))
 
-  StemSec, CompSize = connected_components(cover['neighbor'], np.copy(Sec), 25)
+  StemSec, CompSize = connected_components(cover['neighbor'], Sec, 25)
 
   if DEBUG:
     #print(f"StemSec[1]: {StemSec[1]}")
@@ -86,8 +86,6 @@ def isolate_trees(P, Hei=None, cover=None):
     #plot_point_cloud(P[cover['center'][Sec,:],:])
     #plot_point_cloud(P)
     plot_segs(P,{0:StemSec[0], 1:StemSec[1]},1,cover["ball"], 'two_stems')
-    #exit()
-  if DEBUG:
     #print(StemSec)
     #print(CompSize)
     print(f"len(CompSize): {len(CompSize)}")
@@ -195,6 +193,7 @@ def isolate_trees(P, Hei=None, cover=None):
     Bottom = np.concatenate([C[key] for key in C.keys()]) # The bottom sets
     Trees[i] = np.concatenate([Trees[i], Bottom]) # include the bottom to the tree
   if DEBUG:
+    plot_point_cloud(P[cover['center'][np.concatenate([Trees[0], Trees[1], Trees[2], Trees[3], Trees[4], Trees[5]])],:], "six_stems")
     plot_point_cloud(P[cover['center'][Trees[1]],:], "1_tree_p6")
     plot_point_cloud(P[cover['center'][Trees[0]],:], "0_tree_p6")
     plot_point_cloud(P[cover['center'][Base[1]],:], "1_base_p6")

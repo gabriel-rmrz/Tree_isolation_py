@@ -67,7 +67,7 @@ def plot_segs(P, comps, ms, Bal=None, prefix=''):
     # Plot the segments without Bal
     for i, (key, C) in enumerate(comps.items()):
       #ax.scatter(P[C, 0], P[C, 1], P[C, 2], color=col[i % len(col)])
-      ax.scatter(P[C,0], P[C,1], P[C,2], color=col[i % len(col)], marker='.', s=1)
+      ax.scatter(P[C,0], P[C,1], P[C,2], color=col[i % len(col)], marker='.', s=0.03)
   else:
     # Plot the segments with Bal
     num_points = P.shape[0]
@@ -80,7 +80,7 @@ def plot_segs(P, comps, ms, Bal=None, prefix=''):
         D[C] = True
         
         #plt.scatter(P[C,0], P[C,1], P[C,2], color=col[i % len(col)], marker='.', s=1)
-        ax.scatter(P[C,0], P[C,1], P[C,2], color=col[i % len(col)], marker='.', s=1)
+        ax.scatter(P[C,0], P[C,1], P[C,2], color=col[i % len(col)], marker='.', s=0.03)
         #ax.scatter(P[C,0], P[C,1], P[C,2], color='b', marker='.', s=1)
   plt.axis('equal')
   plt.savefig(f"plots/{prefix}_segs.png", dpi=500)
