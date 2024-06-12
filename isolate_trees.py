@@ -178,7 +178,7 @@ def isolate_trees(P, Hei=None, cover=None):
   Forb[base] = False
 
   # Determine the shortest paths (assumes the trees are connected to the gound level)
-  _, PathLen, EndSet = shortest_paths(cover, base, Forb)
+  _, PathLen, EndSet = shortest_paths(cover, np.copy(base), np.copy(Forb))
 
   ## Define the bottoms of the trees as thos sets whose path_lenght/height
   #  ratio is less than 1.1
@@ -224,7 +224,7 @@ def isolate_trees(P, Hei=None, cover=None):
   base = np.concatenate([Bases[key] for key in Bases.keys()]) # the bases of the paths
   Forb = np.ones(numB, dtype='bool') # the forbiden sets for the paths
   Forb[np.concatenate([Trees[key] for key in Trees.keys()])] = False
-  PathNum, PathDist, EndSet  = shortest_paths(cover, base, np.copy(Forb))
+  PathNum, PathDist, EndSet  = shortest_paths(cover, np.copy(base), np.copy(Forb))
   if DEBUG:
     print(f"PathNum: {PathNum}")
     print(f"len(PathNum): {len(PathNum)}")
