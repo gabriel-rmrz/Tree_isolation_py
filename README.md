@@ -12,6 +12,7 @@ Ported from Pasi Raumonen code
 
 
 # TODO
+ - Implement a way to test the output of python in matlab and viceversa.
  - Define type uint that would work as the matlab one when we try to put a negative value in it
  - Check why the Components value in connected_componens.m:80 and segments_paths_height:244 are different, even if they seem to implement the same solution.
  - See if we can use a generic method instead of tools/unique_elements.py
