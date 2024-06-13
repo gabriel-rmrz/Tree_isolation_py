@@ -10,6 +10,7 @@ import open3d as o3d
 from cover_sets_plot import cover_sets_plot
 from filtering_plot import filtering_plot
 from isolate_trees import isolate_trees
+from test_isolate_trees import test_isolate_trees
 from tools.remove_bottom import remove_bottom
 from tools.compute_height import compute_height 
 #from pycallgraph import PyCallGraph
@@ -47,7 +48,8 @@ def main():
     exit()
 
   if TEST_ISO:
-    isolate_trees(P)
+    #isolate_trees(P)
+    test_isolate_trees(P)
 
 
   if TEST_FILT:
