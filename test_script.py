@@ -50,6 +50,7 @@ def main():
   if TEST_ISO:
     #isolate_trees(P)
     test_isolate_trees(P)
+  exit()
 
 
   if TEST_FILT:

@@ -8,11 +8,18 @@ from filtering_plot import filtering_plot
 from cover_sets_plot import cover_sets_plot
 from tools.connected_components import connected_components
 from shortest_paths_height import shortest_paths_height
+#from test_shortest_paths_height import test_shortest_paths_height
 from shortest_paths import shortest_paths
 from segments_num_path import segments_num_path
 from pydict_to_matstruct import pydict_to_matstruct
 
 import scipy.io
+if DEBUG:
+  def print_boolean_array(array):
+    # Convert the array to a numpy array if it isn't already
+    np_array = np.array(array, dtype=int)
+    # Convert the array to a string without any spaces between elements and print
+    print(''.join(map(str, np_array)))
 
 def test_isolate_trees(P, Hei=None, cover=None):
   '''
@@ -67,14 +74,28 @@ def test_isolate_trees(P, Hei=None, cover=None):
   scipy.io.savemat('matlab/Hei.mat', {'Hei': Hei})
   scipy.io.savemat('matlab/Ground.mat', {'Ground': Ground})
   scipy.io.savemat('matlab/Tri.mat', {'Tri': Tri})
-  scipy.io.savemat('matlab/P.mat', {'P': P})
-  pydict_to_matstruct(inputs, 'matlab/inputs.mat','inputs')
+  #scipy.io.savemat('matlab/P.mat', {'P': P})
+  #pydict_to_matstruct(inputs, 'matlab/inputs.mat','inputs')
 
-  exit()
   ## 2. Cover the point cloud with patches
   if cover==None:
     cover  = cover_sets_plot(np.copy(P),inputs)
 
+  #pydict_to_matstruct(cover, 'matlab/cover.mat','cover')
+  ball = {f"k{key+1}": value+1 for key, value in cover['ball'].items()}
+  ball_k = {f"k{key+1}":key+1 for key in cover['ball'].keys()}
+  neighbor = {f"k{key+1}": value+1 for key, value in cover['neighbor'].items()}
+  neighbor_k = {f"k{key+1}":key+1 for key in cover['neighbor'].keys()}
+  NeiDis = {f"k{key+1}": value for key, value in cover['NeiDis'].items()}
+  NeiDis_k = {f"k{key+1}":key+1 for key in cover['NeiDis'].keys()}
+  pydict_to_matstruct(ball, 'matlab/ball.mat','ball')
+  pydict_to_matstruct(ball_k, 'matlab/ball_k.mat','ball_k')
+  pydict_to_matstruct(neighbor, 'matlab/neighbor.mat','neighbor')
+  pydict_to_matstruct(neighbor_k, 'matlab/neighbor_k.mat','neighbor_k')
+  pydict_to_matstruct(NeiDis, 'matlab/NeiDis.mat','NeiDis')
+  pydict_to_matstruct(NeiDis_k, 'matlab/NeiDis_k.mat','NeiDis_k')
+  pydict_to_matstruct(cover, 'matlab/cover.mat','cover')
+  scipy.io.savemat('matlab/P.mat', {'P': P})
 
   ## 3. Locate three candidates by selecting stem sections
   print('\t -------------------------------------')
@@ -94,6 +115,13 @@ def test_isolate_trees(P, Hei=None, cover=None):
     #print(sum(Sec))
 
   StemSec, CompSize = connected_components(cover['neighbor'], Sec, 25)
+  
+  StemSec_k = {f"k{key+1}":key+1 for key in StemSec.keys()}
+  StemSec2 = {f"k{key+1}": value+1 for key, value in StemSec.items()}
+  pydict_to_matstruct(StemSec2, 'matlab/StemSec.mat','StemSec')
+  pydict_to_matstruct(StemSec_k, 'matlab/StemSec_k.mat','StemSec_k')
+  print(f"type(StemSec): {type(StemSec)}")
+  print(f"StemSec[1]: {StemSec[1]}")
 
   if DEBUG:
     #print(f"StemSec[1]: {StemSec[1]}")
@@ -151,7 +179,29 @@ def test_isolate_trees(P, Hei=None, cover=None):
     print(f"type(Hei): {type(Hei)}")
     print(f"type(Base): {type(Base)}")
     print(f"type(BaseDist): {type(BaseDist)}")
+  
+  scipy.io.savemat('matlab/P_sph.mat', {'P': P})
+  scipy.io.savemat('matlab/Hei_sph.mat', {'Hei': Hei})
+  scipy.io.savemat('matlab/Base_sph.mat', {'Base': Base})
+  scipy.io.savemat('matlab/BaseDist_sph.mat', {'BaseDist': BaseDist})
   EndSet, cover, PathLen = shortest_paths_height(np.copy(P), cover, np.copy(Hei), np.copy(Base), np.copy(BaseDist), inputs)
+  print(EndSet)
+
+  ball = {f"k{key+1}": value+1 for key, value in cover['ball'].items()}
+  ball_k = {f"k{key+1}":key+1 for key in cover['ball'].keys()}
+  neighbor = {f"k{key+1}": value+1 for key, value in cover['neighbor'].items()}
+  neighbor_k = {f"k{key+1}":key+1 for key in cover['neighbor'].keys()}
+  NeiDis = {f"k{key+1}": value for key, value in cover['NeiDis'].items()}
+  NeiDis_k = {f"k{key+1}":key+1 for key in cover['NeiDis'].keys()}
+  pydict_to_matstruct(ball, 'matlab/ball_sph.mat','ball')
+  pydict_to_matstruct(ball_k, 'matlab/ball_k_sph.mat','ball_k')
+  pydict_to_matstruct(neighbor, 'matlab/neighbor_sph.mat','neighbor')
+  pydict_to_matstruct(neighbor_k, 'matlab/neighbor_k_sph.mat','neighbor_k')
+  pydict_to_matstruct(NeiDis, 'matlab/NeiDis_sph.mat','NeiDis')
+  pydict_to_matstruct(NeiDis_k, 'matlab/NeiDis_k_sph.mat','NeiDis_k')
+  pydict_to_matstruct(cover, 'matlab/cover_sph.mat','cover')
+
+  scipy.io.savemat('matlab/EndSet_sph.mat', {'EndSet': EndSet})
 
   if DEBUG:
     print(f"len(EndSet): {len(EndSet)}")
@@ -173,19 +223,21 @@ def test_isolate_trees(P, Hei=None, cover=None):
     n = len(S)
     C = {}
     for j in range(n):
-      C[j] = ind[EndSet == S[j]]
+      C[j] = ind[(EndSet == S[j]) & (EndSet>0)]
     T = np.concatenate([C[key] for key in C.keys()])
     Trees[i] = T
     Base[i] = T[H[T] < (min(H[T]) + 0.5)]
   if DEBUG:
     plot_point_cloud(P[cover['center'][Trees[0]],:], "0_tree_p5")
     plot_point_cloud(P[cover['center'][Trees[1]],:], "1_tree_p5")
-    plot_point_cloud(P[cover['center'][Trees[2]],:], "2_tree_p5")
-    plot_point_cloud(P[cover['center'][Trees[3]],:], "3_tree_p5")
-    plot_point_cloud(P[cover['center'][Trees[4]],:], "4_tree_p5")
-    plot_point_cloud(P[cover['center'][Trees[5]],:], "5_tree_p5")
     #plot_segs(P,Trees,1,cover["ball"],'segs')
+    print(f"5: Trees: {Trees}")
+    print(f"5: Base: {Base}")
     print(f"5: len(Trees): {len(Trees)}")
+    print(f"5: len(Trees[0]): {len(Trees[0])}")
+    print(f"5: len(Trees[1]): {len(Trees[1])}")
+    print(f"5: len(Base[0]): {len(Base[0])}")
+    print(f"5: len(Base[1]): {len(Base[1])}")
 
 
   ## 6. Extend the trees downwards with shortest paths
@@ -194,9 +246,20 @@ def test_isolate_trees(P, Hei=None, cover=None):
   base = np.concatenate([Base[key] for key in Base.keys()])
   Forb[np.concatenate([Trees[key] for key in Trees.keys()])] = True
   Forb[base] = False
+  if DEBUG:
+    print_boolean_array(Forb)
+    print(f"sum(Forb): {sum(Forb)}")
+    print(f"len(Forb): {len(Forb)}")
+    print(f"len(base): {len(base)}")
 
   # Determine the shortest paths (assumes the trees are connected to the gound level)
   _, PathLen, EndSet = shortest_paths(cover, np.copy(base), np.copy(Forb))
+
+  if DEBUG:
+    print(f"PathLen): {PathLen}")
+    print(f"EndSet: {EndSet}")
+    print(f"len(PathLen): {len(PathLen)}")
+    print(f"len(EndSet): {len(EndSet)}")
 
   ## Define the bottoms of the trees as thos sets whose path_lenght/height
   #  ratio is less than 1.1
@@ -211,12 +274,18 @@ def test_isolate_trees(P, Hei=None, cover=None):
     Bottom = np.concatenate([C[key] for key in C.keys()]) # The bottom sets
     Trees[i] = np.concatenate([Trees[i], Bottom]) # include the bottom to the tree
   if DEBUG:
-    plot_point_cloud(P[cover['center'][np.concatenate([Trees[0], Trees[1], Trees[2], Trees[3], Trees[4], Trees[5]])],:], "six_stems")
+    #plot_point_cloud(P[cover['center'][np.concatenate([Trees[0], Trees[1], Trees[2], Trees[3], Trees[4], Trees[5]])],:], "six_stems")
     plot_point_cloud(P[cover['center'][Trees[1]],:], "1_tree_p6")
     plot_point_cloud(P[cover['center'][Trees[0]],:], "0_tree_p6")
     plot_point_cloud(P[cover['center'][Base[1]],:], "1_base_p6")
     plot_point_cloud(P[cover['center'][Base[0]],:], "0_base_p6")
+    print(f"6: Trees: {Trees}")
+    print(f"6: Bottom: {Bottom}")
     print(f"6: len(Trees): {len(Trees)}")
+    print(f"6: len(Trees[0]): {len(Trees[0])}")
+    print(f"6: len(Trees[1]): {len(Trees[1])}")
+    print(f"6: len(Bottom): {len(Bottom)}")
+    exit()
   
   ## 7. Remove trees that are not connected to the ground of are too short
   # Keep only the trees that are close enough  to the ground level (minimum 
@@ -239,8 +308,6 @@ def test_isolate_trees(P, Hei=None, cover=None):
 
   ## 8. Segment the trees into stem and branches based on shortest paths
   # Determine the shortest paths
-  base = np.concatenate([Bases[key] for key in Bases.keys()]) # the bases of the paths
-  Forb = np.ones(numB, dtype='bool') # the forbiden sets for the paths
   Forb[np.concatenate([Trees[key] for key in Trees.keys()])] = False
   PathNum, PathDist, EndSet  = shortest_paths(cover, np.copy(base), np.copy(Forb))
   if DEBUG:
