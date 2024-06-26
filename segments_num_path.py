@@ -87,16 +87,16 @@ def segments_num_path(cover, Base, Forb, PathNum):
 
     # Define the components of cut and study regions
     #numC = 0
+
     if CutSize > 0:
       CutComps, _ = cut_components(Nei, np.copy(Cut), CutSize, np.copy(Fal), np.copy(Fal))
 
+      if DEBUG:
+        print(f"Cut: {Cut}")
+        print(f"CutComps: {CutComps}")
+        print(f"len(CutComps): {len(CutComps)}")
       numC = len(CutComps)
       if numC >1:
-        if DEBUG:
-          print(f"Cut: {Cut}")
-          print(f"CutComps: {CutComps}")
-          print(f"len(CutComps): {len(CutComps)}")
-          exit()
         StudyComps, Bases, CompSize, Cont, BaseSize = study_components(Nei, numS, np.copy(Cut), CutComps, np.copy(Forb), np.copy(Fal), np.copy(Fal))
 
         if DEBUG:
@@ -110,7 +110,6 @@ def segments_num_path(cover, Base, Forb, PathNum):
           print(f"len(Cont) {len(Cont)}")
           print(f"len(Bases) {len(Bases)}")
           print(f"len(StudyComps) {len(StudyComps)}")
-          exit()
         numC = len(Cont)
     else:
       numC = 0

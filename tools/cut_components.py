@@ -17,7 +17,7 @@ def cut_components(Nei,Cut,CutSize,Fal, isFal):
       Components = {0:np.array(Cut).astype(np.uint32)}
       CompSize = [1]
     else:
-      Components = {0:np.array(Cut[0]).astype(np.uint32), 1:np.array(Cut[1]).astype(np.uint32)}
+      Components = {0:np.array([Cut[0]]).astype(np.uint32), 1:np.array([Cut[1]]).astype(np.uint32)}
       CompSize = [1, 1]
     return Components, CompSize
   elif CutSize == 3:
@@ -28,17 +28,17 @@ def cut_components(Nei,Cut,CutSize,Fal, isFal):
       CompSize = [1]
       Components = {0:np.array(Cut).astype(np.uint32)}
     elif np.any(I):
-      Components = {0:np.asarray(Cut[:2]).astype(np.uint32), 1:np.array(Cut[2]).astype(np.uint32)}
+      Components = {0:np.array(Cut[:2]).astype(np.uint32), 1:np.array([Cut[2]]).astype(np.uint32)}
       CompSize = [2,1]
     elif np.any(J):
-      Components = {0:np.asarray(Cut[[0,2]]).astype(np.uint32), 1:np.array(Cut[1]).astype(np.uint32)}
+      Components = {0:np.array(Cut[[0,2]]).astype(np.uint32), 1:np.array([Cut[1]]).astype(np.uint32)}
       CompSize = [2,1]
     elif np.any(K):
-      Components = {0:np.asarray(Cut[[1,2]]).astype(np.uint32), 1:np.array(Cut[0]).astype(np.uint32)}
+      Components = {0:np.array(Cut[[1,2]]).astype(np.uint32), 1:np.array([Cut[0]]).astype(np.uint32)}
       CompSize = [2,1]
     else:
       CompSize = [1, 1, 1]
-      Components = {0:np.asarray(Cut[0]).astype(np.uint32), 1:np.array(Cut[1]).astype(np.uint32), 2:np.array(Cut[2]).astype(np.uint32)}
+      Components = {0:np.array([Cut[0]]).astype(np.uint32), 1:np.array([Cut[1]]).astype(np.uint32), 2:np.array([Cut[2]]).astype(np.uint32)}
     return Components, CompSize
   else: 
     Components = {}
@@ -56,13 +56,8 @@ def cut_components(Nei,Cut,CutSize,Fal, isFal):
       Comp[0] = m
       Fal[m] = False
       t = 1
-      if DEBUG:
-        print(f"a: {a}")
       while a > 0:
-        Comp[t+1-1:t+a] = Added
-        if DEBUG:
-          print(f"Added: {Added}")
-        '''
+        #Comp[t+1-1:t+a] = Added
         if len(Comp[t+1-1:t+a]) < len(Added):
           diff = len(Added) - len(Comp[t+1-1:t+a])
           Comp[t+1-1:t+a] = Added[:a-diff]
@@ -70,24 +65,28 @@ def cut_components(Nei,Cut,CutSize,Fal, isFal):
             np.append(Comp, Added[a-d])
         else:
           Comp[t+1-1:t+a] = Added
-        '''
           
         Fal[Added] = False
         t = t + a
         Ext = np.concatenate([Nei[key] for key in Added])
         Ext = unique_elements(Ext,isFal)
-        #Ext = np.unique(Ext)
         I = Fal[Ext]
         Added = Ext[I]
         a = len(Added)
       i += t
       numC +=1
-      Components[numC-1] = Comp[:t]
+      Components[numC-1] = np.copy(Comp[:t])
       CompSize[numC-1] = t
+      if DEBUG:
+        print(f"Components: {Components}")
+        print(f"CompSize: {CompSize}")
+        print(f"numC-1: {numC-1}")
+      
       if i < CutSize:
         J = Fal[Cut]
         m = Cut[J]
         m = m[0]
+      
     CompSize = CompSize[:numC]
     return Components, CompSize
 

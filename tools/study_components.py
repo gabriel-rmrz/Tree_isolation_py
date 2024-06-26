@@ -64,9 +64,10 @@ def study_components(Nei, numS, Cut, CutComps, Forb, Fal, isFalse):
   Comp = np.zeros(studysize, dtype=np.int32)
   while i <= numC:
     C = CutComps[i-1]
-    C = np.array(C)
     while j < studysize:
       if isinstance(C, np.ndarray):
+        print(f"C: {C}")
+        print(f"type(C): {type(C)}")
         a = len(C)
       elif isinstance(C, (np.int32, np.uint32)):
         a = 1 
@@ -95,13 +96,11 @@ def study_components(Nei, numS, Cut, CutComps, Forb, Fal, isFalse):
         for key in C:
           print(f"len(Nei[{key}]): {len(Nei[key])}")
           print(f"len(np.concatenate([Nei[key] for key in C])): {len(np.concatenate([Nei[key] for key in C]))}")
-        exit()
       t =a
       I = Fal[Add]
       Add = Add[I]
       a = len(Add)
       while a>0:
-        '''
         if len(Comp[t+1-1:t+a]) < len(Add):
           diff = len(Add) - len(Comp[t+1-1:t+a])
           Comp[t+1-1:t+a] = Add[:a-diff]
@@ -109,8 +108,7 @@ def study_components(Nei, numS, Cut, CutComps, Forb, Fal, isFalse):
             np.append(Comp, Add[a-d])
         else:
           Comp[t+1-1:t+a] = Add
-        '''
-        Comp[t+1-1:t+a] = Add
+        #Comp[t+1-1:t+a] = Add
 
         Fal[Add] = False
         t += a
@@ -121,7 +119,7 @@ def study_components(Nei, numS, Cut, CutComps, Forb, Fal, isFalse):
         a = len(Add)
       j += t
       k += 1
-      Components[k-1] = Comp[:t]
+      Components[k-1] = np.copy(Comp[:t])
       CompSize[k-1] = t
       if j < studysize:
         C = []
@@ -142,7 +140,6 @@ def study_components(Nei, numS, Cut, CutComps, Forb, Fal, isFalse):
     print(f"Components: {Components}")
     print(f"len(Components): {len(Components)}")
     print(f"len(Components[0]): {len(Components[0])}")
-    exit()
   # Determine BaseSize and Cont
   Cont = np.ones(k, dtype='bool')
   BaseSize = np.zeros(k, dtype=np.int32)
