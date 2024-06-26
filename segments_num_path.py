@@ -49,7 +49,7 @@ def segments_num_path(cover, Base, Forb, PathNum):
 
   # Initialize SChi
   SChi[0] = np.zeros(5000, dtype=np.uint32)
-  C = np.zeros(2000)
+  C = np.zeros(200)
   for i in range(1, a):
     SChi[i] = C
   NChi = np.zeros(a, dtype=np.uint32)  # Number of child segments found for each segment
@@ -78,7 +78,7 @@ def segments_num_path(cover, Base, Forb, PathNum):
     Forb[Seg[numL-1]] = True
 
     # Define the study
-    Cut = define_cut(Nei, Seg[numL-1], Forb, Fal)
+    Cut = define_cut(Nei, Seg[numL-1], np.copy(Forb), np.copy(Fal))
     CutSize=len(Cut)
 
     if NewSeg:
@@ -88,24 +88,29 @@ def segments_num_path(cover, Base, Forb, PathNum):
     # Define the components of cut and study regions
     #numC = 0
     if CutSize > 0:
-      CutComps, _ = cut_components(Nei, Cut, CutSize, Fal, Fal)
+      CutComps, _ = cut_components(Nei, np.copy(Cut), CutSize, np.copy(Fal), np.copy(Fal))
 
-      if DEBUG:
-        print(f"CutComps: {CutComps}")
-        print(f"len(CutComps): {len(CutComps)}")
       numC = len(CutComps)
       if numC >1:
-        StudyComps, Bases, CompSize, Cont, BaseSize = study_components(Nei, numS, Cut, CutComps, Forb, Fal, Fal)
+        if DEBUG:
+          print(f"Cut: {Cut}")
+          print(f"CutComps: {CutComps}")
+          print(f"len(CutComps): {len(CutComps)}")
+          exit()
+        StudyComps, Bases, CompSize, Cont, BaseSize = study_components(Nei, numS, np.copy(Cut), CutComps, np.copy(Forb), np.copy(Fal), np.copy(Fal))
 
         if DEBUG:
           print(f"############################")
           print(f"Study components")
           print(f"############################")
+          print(f"Bases: {Bases}")
+          print(f"CompSize: {CompSize}")
+          print(f"BaseSize: {BaseSize}")
           print(f"numC: {numC}")
           print(f"len(Cont) {len(Cont)}")
-          print(f"Bases: {Bases}")
           print(f"len(Bases) {len(Bases)}")
           print(f"len(StudyComps) {len(StudyComps)}")
+          exit()
         numC = len(Cont)
     else:
       numC = 0

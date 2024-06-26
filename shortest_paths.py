@@ -18,7 +18,7 @@ def shortest_paths(cover, Base, Forb):
   b = n
   J = 0
   PathDist = 1000*np.ones(numB, dtype=np.single)
-  PathNei = np.zeros(numB, dtype=np.uint32)
+  PathNei = -1* np.ones(numB, dtype=np.uint32)
   PathDist[Base] = 0
   C = Base[0]
   EndSet = np.zeros(numB, dtype=np.uint32)
@@ -50,8 +50,8 @@ def shortest_paths(cover, Base, Forb):
   PathNum = np.ones(numB, dtype=np.uint32)
   for i in range(numB):
     N = PathNei[i]
-    while N > 0:
-      PathNum[N] = PathNum[N] + 1
+    while N >=0:
+      PathNum[N] = PathNum[N] +1
       N = PathNei[N]
 
 

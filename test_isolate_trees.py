@@ -285,7 +285,6 @@ def test_isolate_trees(P, Hei=None, cover=None):
     print(f"6: len(Trees[0]): {len(Trees[0])}")
     print(f"6: len(Trees[1]): {len(Trees[1])}")
     print(f"6: len(Bottom): {len(Bottom)}")
-    exit()
   
   ## 7. Remove trees that are not connected to the ground of are too short
   # Keep only the trees that are close enough  to the ground level (minimum 
@@ -297,7 +296,7 @@ def test_isolate_trees(P, Hei=None, cover=None):
   Ind = np.array(range(numT)).astype(np.uint32)
   for i in range(numT):
     T = Trees[i]
-    if (len(T) ==0) or (np.min(H[T]) > 100) or (np.max(H[T]) - np.min(H[T])) < 500:
+    if (len(T) ==0) or (np.min(H[T]) > 50) or (np.max(H[T]) - np.min(H[T])) < 500:
       Keep[i] = False
     else:
       I = H[T] < 50
@@ -306,26 +305,30 @@ def test_isolate_trees(P, Hei=None, cover=None):
   numT = len(Trees)
   Bases = {key: Bases[key] for key in Ind[Keep] }
 
+  if DEBUG:
+    print(f"H: {H}")
+    print(f"Trees: {Trees}")
+    print(f"Bases: {Bases}")
+    print(f"len(H): {len(H)}")
+    print(f"len(Trees): {len(Trees)}")
+    print(f"len(Trees[0]): {len(Trees[0])}")
+    print(f"len(Trees[1]): {len(Trees[1])}")
+    print(f"len(Bases): {len(Bases)}")
+    print(f"len(Bases[0]): {len(Bases[0])}")
+    print(f"len(Bases[1]): {len(Bases[1])}")
+
+
   ## 8. Segment the trees into stem and branches based on shortest paths
   # Determine the shortest paths
+  base = np.concatenate([Bases[key] for key in Bases.keys()])
+  Forb = np.ones(numB, dtype='bool')
   Forb[np.concatenate([Trees[key] for key in Trees.keys()])] = False
-  PathNum, PathDist, EndSet  = shortest_paths(cover, np.copy(base), np.copy(Forb))
+  PathNum, _1, _2  = shortest_paths(cover, np.copy(base), np.copy(Forb))
   if DEBUG:
     print(f"PathNum: {PathNum}")
+    print(f"EndSet: {EndSet}")
     print(f"len(PathNum): {len(PathNum)}")
-    print(f"len(cover['ball']): {len(cover['ball'])}")
-    print(f"type(cover['ball']): {type(cover['ball'])}")
-    print(f"len(cover['center']): {len(cover['center'])}")
-    print(f"type(cover['center']): {type(cover['center'])}")
-    print(f"len(cover['neighbor']): {len(cover['neighbor'])}")
-    print(f"type(cover['neighbor']): {type(cover['neighbor'])}")
-    print(f"len(cover['NeiDis']): {len(cover['NeiDis'])}")
-    print(f"type(cover['NeiDis']): {type(cover['NeiDis'])}")
-    print(f"len(cover['BallOfPoint']): {len(cover['BallOfPoint'])}")
-    print(f"type(cover['BallOfPoint']): {type(cover['BallOfPoint'])}")
-    print(f"len(cover['inputs']): {len(cover['inputs'])}")
-    print(f"type(cover['inputs']): {type(cover['inputs'])}")
-    print(f"cover['inputs']: {cover['inputs']}")
+    print(f"len(EndSet): {len(EndSet)}")
 
 
   # Segment each tree and select only the stem

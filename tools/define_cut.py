@@ -12,7 +12,7 @@ def define_cut(Nei, CutPre, Forb, Fal):
     return []
   else:
     print(f"CutPre.item(): {CutPre.item()}")
-    Cut = Nei[CutPre.item()]
+    Cut = np.copy(Nei[CutPre.item()])
   Cut = unique_elements(Cut,Fal)
   #Cut = np.unique(Cut)
   #Cut = Cut[Fal[Cut]]
