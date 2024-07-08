@@ -11,11 +11,8 @@ def define_cut(Nei, CutPre, Forb, Fal):
   elif len(CutPre) ==0:
     return []
   else:
-    print(f"CutPre.item(): {CutPre.item()}")
     Cut = np.copy(Nei[CutPre.item()])
   Cut = unique_elements(Cut,Fal)
-  #Cut = np.unique(Cut)
-  #Cut = Cut[Fal[Cut]]
   I = Forb[Cut]
   Cut = Cut[~I]
   return Cut

@@ -42,8 +42,8 @@ def compute_height(P, inputs):
   if DEBUG:
     print(f"Bot: {Bot}")
 
-  #BL = defaultdict(list)
-  BL = {}
+  BL = defaultdict(list)
+  #BL = {}
   PointInd = np.asarray(range(numP), dtype=np.uint32)
 
   # Define Bot-values
@@ -79,11 +79,12 @@ def compute_height(P, inputs):
   Ground = np.zeros([Nx*Ny,3])
   if DEBUG:
     print(f"Ground: {Ground}")
+    print(f"BL.keys(): {BL.keys()}")
 
   for i in range(2,Nx):
     for j in range(2,Ny):
       k=(j-1)*Nx+i
-      if (np.asarray(BL[k-1])).any():
+      if np.any(np.asarray(BL[k-1])):
         I = np.argsort(P[BL[k-1],2])
         a = np.ceil(len(I)*0.1).astype(np.int32)
         Q = np.mean(P[BL[k-1][I[:a]],:],0)

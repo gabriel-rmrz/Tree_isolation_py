@@ -1,4 +1,4 @@
-DEBUG = True
+DEBUG = False
 import numpy as  np
 import yaml
 from plotting.plot_point_cloud import plot_point_cloud

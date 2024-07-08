@@ -35,7 +35,8 @@ def get_pointcloud(las, isRGB=False):
 def main():
   with open('configs/inputs.yaml', 'r') as file:
     inputs = yaml.safe_load(file)
-  las = laspy.read('extracted_points.las')      
+  #las = laspy.read('extracted_points.las')      
+  las = laspy.read('Area_2_LAS_15.las')      
   #print("offset")
   #print(las.header.x_offset)
   #print("scale factor")

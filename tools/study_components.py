@@ -1,4 +1,4 @@
-DEBUG = True
+DEBUG = False
 import numpy as np
 from tools.unique_elements import unique_elements
 
@@ -66,8 +66,6 @@ def study_components(Nei, numS, Cut, CutComps, Forb, Fal, isFalse):
     C = CutComps[i-1]
     while j < studysize:
       if isinstance(C, np.ndarray):
-        print(f"C: {C}")
-        print(f"type(C): {type(C)}")
         a = len(C)
       elif isinstance(C, (np.int32, np.uint32)):
         a = 1 

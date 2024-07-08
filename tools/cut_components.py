@@ -1,4 +1,4 @@
-DEBUG=True
+DEBUG=False
 import numpy as np
 from tools.unique_elements import unique_elements
 def cut_components(Nei,Cut,CutSize,Fal, isFal):

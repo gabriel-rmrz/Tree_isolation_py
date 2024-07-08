@@ -176,7 +176,7 @@ def plot_tree_structure(P, cover, segment, ms, B0, segind, prefix):
     while (i < B0) and (len(c)>0):
       C = np.concatenate([cover["ball"][key] for key in np.unique(np.concatenate([Seg[k] for k in c]))])
       C = set_diff(C,forb)
-      ax.scatter(P[C,0], P[C,1], P[C,2], color=col[i % len(col)], marker='.', s=1)
+      ax.scatter(P[C,0], P[C,1], P[C,2], color=col[i % len(col)], marker='.', s=0.03)
       '''
       print("******************************************")
       print("******************************************")

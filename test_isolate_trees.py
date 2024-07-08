@@ -130,7 +130,7 @@ def test_isolate_trees(P, Hei=None, cover=None):
     plot_point_cloud(P[cover['center'][np.concatenate([StemSec[0], StemSec[1]])],:], "two_stems")
     #plot_point_cloud(P[cover['center'][StemSec[0]],:])
     #plot_point_cloud(P[cover['center'][Sec,:],:])
-    #plot_point_cloud(P)
+    plot_point_cloud(P)
     plot_segs(P,{0:StemSec[0], 1:StemSec[1]},1,cover["ball"], 'two_stems')
     #print(StemSec)
     #print(CompSize)
@@ -333,11 +333,21 @@ def test_isolate_trees(P, Hei=None, cover=None):
 
   # Segment each tree and select only the stem
   for i in range(numT):
+    if not(i in Trees.keys()):
+      continue
     Forb = np.ones(numB, dtype='bool')
     Forb[Trees[i]] = False
     segment =segments_num_path(cover, Bases[i],Forb,PathNum)
+    if DEBUG:
+      '''
+      for k in range(len(segment['segments'][0])):
+        print(f"len(segment['segments'][0][{k}]): {len(segment['segments'][0][k])}")
+        print(f"segment['segments'][0][{k}]: {segment['segments'][0][k]}")
+      '''
+      for k in range(len(segment['segments'][1])):
+        print(f"len(segment['segments'][1][{k}]): {len(segment['segments'][1][k])}")
+        print(f"segment['segments'][1][{k}]: {segment['segments'][1][k]}")
     plot_segs(P,{0:Trees[i]},1,cover["ball"],f"tree_{i}")
-    print(f"segment: {segment}")
     #plot_segs(P,segment['segments'][0],1,cover["ball"],f"segs_{i}")
     plot_tree_structure(P,cover,segment,1,10,0, f"segs_{i}")
 

@@ -1,4 +1,4 @@
-DEBUG= True
+DEBUG= False
 import numpy as np
 def remove_bottom(P, Points, Hei, inputs):
 
