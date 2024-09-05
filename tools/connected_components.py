@@ -53,8 +53,6 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
   Fal_i = np.copy(Fal)
   if (len(Sub)==0) or (len(Nei)==0):
     return {}, [] 
-  if DEBUG:
-    print(Sub[0])
   if (len(Sub)<=3) and not isinstance(Sub[0], (np.bool_, bool)) and ((Sub[0] + 1) > 0) : # Added the + 1 to Sub[0] because we are using indices starting from 0.
     n = len(Sub)
     Components = {}
@@ -122,11 +120,6 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
     else:
       # Subset of cover sets
       numS = np.count_nonzero(Sub)
-      if DEBUG:
-        print(f"We are here!")
-        print(f"Counting non zero values of sub")
-        print(f"numS: {numS}")
-        print(f"Sub: {Sub}")
 
 
 
@@ -166,10 +159,6 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
           Add = Nei[Add] 
         else:
           Add = np.concatenate([Nei[key] for key in Add])
-        '''
-        if DEBUG:
-          print(f"Add: {Add}")
-        '''
         I = Sub[Add]
         Add = Add[I]
         if isinstance(Add,(np.uint32, np.int64, np.uint64, np.int32)):
@@ -203,11 +192,6 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
         while m < numB and Sub[m] == False:
           m += 1
 
-    '''
-    if DEBUG:
-      print(f"len(Components): {len(Components)}")
-    Components = {key:Components[key] for key in range(numC)}
-    '''
     CompSize = CompSize[:numC]
     return Components, CompSize
 

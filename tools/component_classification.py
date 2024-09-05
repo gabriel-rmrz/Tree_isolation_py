@@ -1,4 +1,3 @@
-DEBUG=False
 import numpy as np
 
 def component_classification(CompSize, Cont, BaseSize, CutSize):
@@ -34,9 +33,6 @@ def component_classification(CompSize, Cont, BaseSize, CutSize):
   Branches = ( Class == 1)
   if ContiComp == 0 and np.any(Branches):
     Ind = np.arange(numC,dtype=np.uint32)
-    if DEBUG:
-      print(f"Branches: {Branches}")
-      print(f"Ind[Branches]: {Ind[Branches]}")
     Branches = Ind[Branches]
     I = np.argmax(CompSize[Branches])
     Class[Branches[I]] = 0

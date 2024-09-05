@@ -1,4 +1,3 @@
-DEBUG= True
 import numpy as np
 from tools.define_cut import define_cut
 from tools.cut_components import cut_components
@@ -76,18 +75,11 @@ def segments_num_path(cover, Base, Forb, PathNum):
   s_stop= 1 
   while Continue and (b < numB-1):
     # Update the forbiden sets
-    if DEBUG and s==s_stop:
-      print(f"s: {s}")
-      print(f"numL: {numL}; sum(Forb): {sum(Forb)}")
-      print(f"numL: {numL}")
-      print(f"Seg[numL-1]: {Seg[numL-1]}")
     Forb[Seg[numL-1]] = True
 
     # Define the study
     Cut = define_cut(Nei, np.copy(Seg[numL-1]), np.copy(Forb), np.copy(Fal))
     CutSize=len(Cut)
-    if DEBUG and s==s_stop:
-      print(f"numL: {numL}; sum(Forb): {sum(Forb)}")
 
     if NewSeg:
       NewSeg = False
@@ -96,15 +88,9 @@ def segments_num_path(cover, Base, Forb, PathNum):
     # Define the components of cut and study regions
     #numC = 0
 
-    if DEBUG and s==s_stop:
-      print(f"CutSize: {CutSize}")
 
     if CutSize > 0:
       CutComps, _ = cut_components(Nei, np.copy(Cut), CutSize, np.copy(Fal), np.copy(Fal))
-      if DEBUG and s==s_stop:
-        print(f"CutComps: {CutComps}")
-        print(f"len(CutComps): {len(CutComps)}")
-
       numC = len(CutComps)
       if numC >1:
         StudyComps, Bases, CompSize, Cont, BaseSize = study_components(Nei, numS, np.copy(Cut), CutComps, np.copy(Forb), np.copy(Fal), np.copy(Fal))
@@ -125,14 +111,6 @@ def segments_num_path(cover, Base, Forb, PathNum):
       # Classify the components of the Study region
       Class = component_classification(CompSize, Cont, BaseSize, CutSize)
 
-      if DEBUG and s==s_stop:
-        #print(f"StudyComps: {StudyComps}")
-        #print(f"Bases: {Bases}")
-        print(f"CompSize: {CompSize}")
-        print(f"Cont: {Cont}")
-        print(f"BaseSize: {BaseSize}")
-        print(f"CutSize: {CutSize}")
-        print(f"Class: {Class}")
       # Use the bumber of paths to decide which component is the continuation
       N = np.zeros(numC, dtype=np.int32)
       for i in range(numC):
@@ -184,9 +162,6 @@ def segments_num_path(cover, Base, Forb, PathNum):
     else:
       # If the study region has zero size, then the current segment is 
       # complete and determine the base of the next segment
-      if DEBUG and s==1:
-        print(f"s: {s}")
-        print(f"Seg: {Seg}")
       Segs[s] = {key:Seg[key] for key in range(numL)}
       S = np.concatenate([Seg[key] for key in range(numL)])
       ForbAll[S] = True
@@ -197,10 +172,6 @@ def segments_num_path(cover, Base, Forb, PathNum):
         Forb = ForbAll
         NewSeg = True
         numL = 1
-        if DEBUG and s==1:
-          print(f"SBas[s]: {SBas[s]}")
-          print(f"sum(ForbAll): {sum(ForbAll)}")
-          print(f"len(S): {len(S)}")
       else:
         Continue = False
   Segs = {key:Segs[key] for key in range(b)}

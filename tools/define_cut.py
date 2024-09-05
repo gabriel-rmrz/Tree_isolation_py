@@ -1,4 +1,3 @@
-DEBUG = False 
 import numpy as np
 from tools.unique_elements import unique_elements
 def define_cut(Nei, CutPre, Forb, Fal):

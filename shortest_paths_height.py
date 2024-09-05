@@ -1,22 +1,9 @@
-DEBUG=False
 import numpy as np
 from scipy.spatial.distance import cdist, squareform
 from collections import defaultdict
 from tools.cubical_partition import cubical_partition
 from tools.connected_components import connected_components
 from tools.unique2 import unique2
-if DEBUG:
-  from tabulate import tabulate
-  def print_boolean_matrix(matrix):
-    # Convert boolean values to int for a cleaner output
-    int_matrix = [[int(cell) for cell in row] for row in matrix]
-    print(tabulate(int_matrix, tablefmt="plain"))
-  def print_boolean_array(array):
-    # Convert the array to a numpy array if it isn't already
-    np_array = np.array(array, dtype=int)
-    # Convert the array to a string without any spaces between elements and print
-    print(''.join(map(str, np_array)))
-
 def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
   # Determines the shortest paths from every point to the base
 
@@ -93,43 +80,25 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
   # Partition of the cover sets into search space
 
   Partition, CC, info = cubical_partition(Ce, GD, method=1)
-  if DEBUG:
-    print(f"CC.shape: {CC.shape}")
-    print(f"Partition.keys(): {Partition.keys()}")
   #Partition = defaultdict(tuple, Partition)
   CC = CC.astype(np.double)
   Voxels = CC[:,0] + info[3]*(CC[:,1] -1) + info[3]*info[4]*(CC[:,2] -1)
   CompCorresp = False
   TreeSets = np.array(PathLen < 1000, dtype='bool') # set belonging to trees, their path length has been determined
-  if DEBUG:
-    print(f"len(PathLen): {len(PathLen)}")
-    print(f"len(TreeSets): {len(TreeSets)}")
-    print(f"sum(TreeSets): {sum(TreeSets)}")
 
   Comps0={}
   while np.any(~TreeSets) and DHRel <= inputs["MaxDHRel"]:
     ## Determine the sets close to the tree sets
     # Define "Tree" as a spatial distribution of "TreeSets" in voxel space
     cc = (np.unique(CC[TreeSets,:], axis=0)).astype(np.int32)
-    if DEBUG:
-      print(f"cc: {cc}")
-      print(f"len(cc): {len(cc)}")
 
     Tree = np.zeros(info[3:6].astype(int), dtype='bool') # tree sets in space/voxelization
     n = len(cc[:,0])
     for i  in range(n):
       Tree[cc[i,0]-1-1:cc[i,0]+1,cc[i,1]-1-1:cc[i,1]+1,cc[i,2]-1-1:cc[i,2]+1] = True # this should be ok
 
-    if DEBUG:
-      #print(f"Tree[:,:,20]: {Tree[:,:,20]}")
-      print(f"Tree.shape: {Tree.shape}")
-      #print_boolean_matrix(Tree[:,:,20])
-
     #Determine the components of the other sets (non-tree sets)
     Other = ind[~TreeSets]
-    if DEBUG:
-      print(f"len(Other): {len(Other)}")
-      print(f"Other: {Other}")
     VoxOtherSets= (Voxels[Other]).astype(np.uint32)
       
     
@@ -138,11 +107,6 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
 
     I = Tree[cubes_voxOtherSets] # This should be ok
     Other = Other[I]
-    if DEBUG:
-      print(f"Other: {Other}")
-      print(f"VoxOtherSets: {VoxOtherSets}")
-      print(f"len(Other): {len(Other)}")
-      print(f"len(VoxOtherSets): {len(VoxOtherSets)}")
     Comps, CS = connected_components(nei, np.copy(Other), 1)
     #I = np.argsort(CS)[::-1]
     I0 = np.argsort(-CS)
@@ -151,8 +115,6 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
     Comps = {I0[key]: value for key, value in Comps.items()}
     #Comps = { key: Comps[key] for key in I0}
     numC = len(Comps)
-    if DEBUG:
-      print(f"len(Comps): {len(Comps)}")
 
 
     # Determine the correspondence between the new and the previous components
@@ -170,9 +132,6 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
       TSS0 = TSS
     numT = np.count_nonzero(TreeSets)
     numO = np.count_nonzero(~TreeSets)
-    if DEBUG:
-      print(f"numT: {numT}")
-      print(f"numO: {numO}")
 
     ## Check if component can be joined to a tree
     TSS = np.zeros(numC, dtype=np.int32)
@@ -189,10 +148,6 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
         for j in range(n):
           v = V[j]
           Vox[j*9:(j+1)*9] = [v, v-1, v+1, v-a, v-a-1, v-a+1, v+a, v+a-1, v+a+1] 
-        if DEBUG:
-          print(f"Vox: {Vox}")
-          print(f"len(Vox): {len(Vox)}")
-
         voxels = (unique2(Vox)).astype(np.uint32)
         par_keys = []
         for vo in voxels:
@@ -203,20 +158,7 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
         TSS[i] = np.sum([len(Partition[key]) for key in par_keys])
         if ~CompCorresp or (CompCor[i] ==0) or (CompCor[i] > 0 and (TSS[i] != TSS0(CompCor[i]))) :  
           sets = np.concatenate([Partition[key] for key in par_keys]).astype(np.int32)
-          if DEBUG:
-            print(f"sets: {sets}")
-            print(f"len(sets): {len(sets)}")
           treesets = sets[TreeSets[sets]]
-          if DEBUG:
-            print(f"treesets: {treesets}")
-          '''
-          if len(sets)>0:
-            sets = np.concatenate(sets)
-            treesets = sets[TreeSets[sets]]
-          else:
-            sets = np.array([])
-            treesets = np.array([])
-          '''
         else:
           treesets = np.array([])
   
@@ -225,9 +167,6 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
           # Compute the distances between the component and tree
           if len(Comp)*len(treesets) < 1e8:
             L = cdist(Ce[Comp,:],Ce[treesets,:])
-            if DEBUG:
-              print(f"L: {L}")
-              print(f"len(L): {len(L)}")
     
 
             # Select the closest set from tree set for each set in the componen
@@ -236,9 +175,6 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
             #ID1 = np.argsort(D1)
             #D1 = D1[ID1]
             #I = I[ID1]
-            if DEBUG:
-              print(f"D1: {D1}")
-              print(f"len(D1): {len(D1)}")
           else:
             m = len(Comp)
             I = np.zeros(m)
@@ -256,16 +192,9 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
               D1[a-1:b] = D2
               I[a-1:b] = I2
           TreeSet = treesets[I]
-          if DEBUG:
-            print(f"D1: {D1}")
-            print(f"treesets: {treesets}")
-            print(f"TreeSet: {TreeSet}")
-            print(f"len(TreeSet): {len(TreeSet)}")
 
           # Compute the new path distances
           L = PathLen[TreeSet] + D1
-          if DEBUG:
-            print(f"L: {L}")
           # Compute the ratio of path distance and heigh of the sets
           DH = L/Hei[Comp]
 
@@ -297,9 +226,6 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
 
                 # Expand as much as possibl;e
                 unvisited = np.setdiff1d(nei[CS], TS)
-                if DEBUG:
-                  print(f"unvisited: {unvisited}")
-
 
                 C = CS
                 m = len(unvisited)
@@ -340,11 +266,6 @@ def shortest_paths_height(P, cover, Hei, Base, BaseDist, inputs, Forb=None):
 
     numO0 = numO
     numO = np.count_nonzero(~TreeSets)
-    if DEBUG:
-      print(f"Comps: {Comps}")
-      print(f"len(Comps): {len(Comps)}")
-      print(f"numO: {numO}")
-      print(f"numO0: {numO0}")
 
     ## Increase maximum gap distance and path distance height ratio
     if numO == numO0:

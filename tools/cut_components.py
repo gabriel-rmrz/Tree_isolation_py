@@ -1,4 +1,3 @@
-DEBUG=False
 import numpy as np
 from tools.unique_elements import unique_elements
 def cut_components(Nei,Cut,CutSize,Fal, isFal):
@@ -77,11 +76,6 @@ def cut_components(Nei,Cut,CutSize,Fal, isFal):
       numC +=1
       Components[numC-1] = np.copy(Comp[:t])
       CompSize[numC-1] = t
-      if DEBUG:
-        print(f"Components: {Components}")
-        print(f"CompSize: {CompSize}")
-        print(f"numC-1: {numC-1}")
-      
       if i < CutSize:
         J = Fal[Cut]
         m = Cut[J]

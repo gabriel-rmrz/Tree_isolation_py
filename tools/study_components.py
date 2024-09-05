@@ -1,4 +1,3 @@
-DEBUG = False
 import numpy as np
 from tools.unique_elements import unique_elements
 
@@ -7,10 +6,6 @@ def study_components(Nei, numS, Cut, CutComps, Forb, Fal, isFalse):
   StudySize = np.zeros(numS,dtype=np.int32)
   Study[0] = Cut
   StudySize[0] = len(Cut)
-  if DEBUG:
-    print(f"StudySize: { StudySize}")
-    print(f"Study: { Study}")
-    print(f"numS: {numS}")
 
   if numS >= 2:
     N = np.copy(Cut)
@@ -19,18 +14,8 @@ def study_components(Nei, numS, Cut, CutComps, Forb, Fal, isFalse):
       Forb[N] = True
       N = np.concatenate([Nei[key] for key in N])
       N = unique_elements(N,Fal)
-      '''
-      if DEBUG:
-        print(f"N: {N}")
-        print(f"len(N): {len(N)}")
-      '''
       I = Forb[N]
       N = N[~I]
-      '''
-      if DEBUG:
-        print(f"N: {N}")
-        print(f"len(N): {len(N)}")
-      '''
       if len(N) > 0:
         i +=1
         Study[i-1] = N
@@ -40,14 +25,6 @@ def study_components(Nei, numS, Cut, CutComps, Forb, Fal, isFalse):
         StudySize = [StudySize[key] for key in range(i)]
         i = numS +1
   
-  '''
-  if DEBUG:
-    print(f"StudySize: { StudySize}")
-    print(f"Study: { Study}")
-    print(f"len(Study): { len(Study)}")
-    print(f"Study[0]: { Study[0]}")
-    print(f"Study[1]: { Study[1]}")
-  '''
   # Define study as a vector
   numS = len(StudySize)
   studysize = sum(StudySize)
@@ -75,25 +52,6 @@ def study_components(Nei, numS, Cut, CutComps, Forb, Fal, isFalse):
         Add = unique_elements(np.concatenate([Nei[key] for key in C]), isFalse)
       else:
         Add =  Nei[C.item()] 
-      '''
-      elif a ==1 and len(C.shape) == 1:
-        if DEBUG:
-          print(f"C: {C}")
-          print(f"C.item(): {C.item()}")
-          print(f"type(C): {type(C)}")
-          print(f"isinstance(C, np.ndarray): {isinstance(C, np.ndarray)}")
-        Add =  Nei[C[0]] 
-      '''
-      if DEBUG:
-        print(f"Add: {Add}")
-        print(f"isFalse: {isFalse}")
-        print(f"len(Add): {len(Add)}")
-        print(f"len(isFalse): {len(isFalse)}")
-        print(f"sum(isFalse): {sum(isFalse)}")
-        print(f"C: {C}")
-        for key in C:
-          print(f"len(Nei[{key}]): {len(Nei[key])}")
-          print(f"len(np.concatenate([Nei[key] for key in C])): {len(np.concatenate([Nei[key] for key in C]))}")
       t =a
       I = Fal[Add]
       Add = Add[I]
@@ -134,10 +92,6 @@ def study_components(Nei, numS, Cut, CutComps, Forb, Fal, isFalse):
     Components = {key:Components[key] for key in range(k)}
     CompSize = CompSize[:k]
   
-  if DEBUG:
-    print(f"Components: {Components}")
-    print(f"len(Components): {len(Components)}")
-    print(f"len(Components[0]): {len(Components[0])}")
   # Determine BaseSize and Cont
   Cont = np.ones(k, dtype='bool')
   BaseSize = np.zeros(k, dtype=np.int32)
