@@ -53,8 +53,6 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
   Fal_i = np.copy(Fal)
   if (len(Sub)==0) or (len(Nei)==0):
     return {}, [] 
-  if DEBUG:
-    print(Sub[0])
   if (len(Sub)<=3) and not isinstance(Sub[0], (np.bool_, bool)) and ((Sub[0] + 1) > 0) : # Added the + 1 to Sub[0] because we are using indices starting from 0.
     n = len(Sub)
     Components = {}
@@ -97,13 +95,13 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
         Components[2] = np.array(Sub[2], dtype=np.uint32)
         CompSize = [1, 1, 1]
       return Components, CompSize
-  elif np.any(Sub) or (len(Sub) == 1 and (Sub[0] + 1) == 0):
+  elif np.any(Sub) or (len(Sub) == 1 and Sub[0] == 0):
 
     numB = len(Nei)
     numS = 0 
     if Fal_i == None:
       Fal = np.zeros(numB, dtype='bool')
-    if (len(Sub) == 1) and (Sub[0] + 1 ==0):
+    if (len(Sub) == 1) and (Sub[0] ==0):
       # All the cover sets
       numS = numB
       if Fal_i == None:
@@ -122,11 +120,6 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
     else:
       # Subset of cover sets
       numS = np.count_nonzero(Sub)
-      if DEBUG:
-        print(f"We are here!")
-        print(f"Counting non zero values of sub")
-        print(f"numS: {numS}")
-        print(f"Sub: {Sub}")
 
 
 
@@ -143,10 +136,10 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
       Add = Nei[m]
       I = Sub[Add]
       Add = Add[I]
-      if type(Add) != np.uint32:
-        a = len(Add)
-      else:
+      if isinstance(Add,(np.uint32, np.uint64)):
         a = 1
+      else:
+        a = len(Add)
       Comp[0] = m
       Sub[m] = False
       t = 1
@@ -162,20 +155,16 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
           Add_temp = np.concatenate((Add_temp, Nei[i]), axis=0) 
         Add = np.asarray(Add_temp).astype(int)
         '''
-        if type(Add) != np.uint32:
-          Add = np.concatenate([Nei[key] for key in Add])
-        else:
+        if isinstance(Add,(np.uint32, np.int64, np.uint64, np.int32)):
           Add = Nei[Add] 
-        '''
-        if DEBUG:
-          print(f"Add: {Add}")
-        '''
+        else:
+          Add = np.concatenate([Nei[key] for key in Add])
         I = Sub[Add]
         Add = Add[I]
-        if type(Add) != np.uint32:
-          n = len(Add)
-        else:
+        if isinstance(Add,(np.uint32, np.int64, np.uint64, np.int32)):
           n = 1
+        else:
+          n = len(Add)
         if n > 2:
           I = np.ones(n, dtype='bool')
           for j in range(n):
@@ -188,10 +177,10 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
         elif n == 2:
           if Add[0] == Add[1]:
             Add = Add[0]
-        if type(Add) != np.uint32:
-          a = len(Add)
-        else:
+        if isinstance(Add,(np.uint32, np.int64, np.uint64, np.int32)):
           a = 1
+        else:
+          a = len(Add)
 
 
       i += t
@@ -203,11 +192,6 @@ def connected_components(Nei,Sub,MinSize,Fal=None):
         while m < numB and Sub[m] == False:
           m += 1
 
-    '''
-    if DEBUG:
-      print(f"len(Components): {len(Components)}")
-    Components = {key:Components[key] for key in range(numC)}
-    '''
     CompSize = CompSize[:numC]
     return Components, CompSize
 

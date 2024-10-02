@@ -16,9 +16,9 @@ def shortest_paths(cover, Base, Forb):
   UV[Base] = True
   a = 1
   b = n
-  J = 1
+  J = 0
   PathDist = 1000*np.ones(numB, dtype=np.single)
-  PathNei = np.zeros(numB, dtype=np.uint32)
+  PathNei = -1* np.ones(numB, dtype=np.uint32)
   PathDist[Base] = 0
   C = Base[0]
   EndSet = np.zeros(numB, dtype=np.uint32)
@@ -32,8 +32,8 @@ def shortest_paths(cover, Base, Forb):
     PathDist[N] = D[I]
     PathNei[N] = C
     EndSet[N] = EndSet[C]
-    if J > 1:
-      Unvisited[a+J-1-1] = Unvisited[a-1]
+    if J > 0:
+      Unvisited[a+J-1] = Unvisited[a-1]
     a +=1
     UV[C] = False
     I = UV[N]
@@ -43,18 +43,15 @@ def shortest_paths(cover, Base, Forb):
     UV[N] = True
     if a<=b:
       J = np.argmin(PathDist[Unvisited[int(a-1):int(b)]])
-      C = Unvisited[a -1+J-1]
-    else:
-      J = np.array([])
-      C = np.array([])
+      C = Unvisited[a+J-1]
   PathDist[PathDist ==1000] = np.max(PathDist[PathDist< 1000])+0.1
 
   ## Compute the number of shortest paths going through each set
   PathNum = np.ones(numB, dtype=np.uint32)
   for i in range(numB):
     N = PathNei[i]
-    while N > 0:
-      PathNum[N] = PathNum[N] + 1
+    while N >=0:
+      PathNum[N] = PathNum[N] +1
       N = PathNei[N]
 
 

@@ -1,4 +1,5 @@
 import numpy as np
+from collections import defaultdict
 '''
  This file is part of TREEQSM.
  
@@ -46,7 +47,7 @@ def cubical_partition(P, EL, NE=3, method=1):
 
   while 8*N[0]*N[1]*N[2] > 4e9:
     EL = 1.1*EL
-    N = np.ceil((Max-Min)/EL)+2*NE+1
+    N = np.ceil((Max-Min)/EL)+2.*NE+1.
 
   Info = np.concatenate([Min, N, [EL, NE]])
   #Info = [Min, N, EL, NE]
@@ -56,12 +57,12 @@ def cubical_partition(P, EL, NE=3, method=1):
 
   # Sorts the points according a lexicographical order
   LexOrd = CubeCoord[:,0] + N[0]* (CubeCoord[:,1] -1) + N[0]*N[1]*(CubeCoord[:,2] -1)
-  CubeCoord = CubeCoord.astype(np.uint16)
+  CubeCoord = CubeCoord.astype(np.uint32)
   SortOrd = (np.argsort(LexOrd)).astype(np.uint32)
   LexOrd = (LexOrd[SortOrd]).astype(np.uint32)
 
   # Define "Partition"
-  Partition = {}
+  Partition = defaultdict(list) 
   numP = len(P[:,0]) # Number of points
   if method== 1:
     p = 1 # The index of the point under comparison
@@ -86,9 +87,9 @@ def cubical_partition(P, EL, NE=3, method=1):
       while (p+t <= numP) and (LexOrd[p-1] == LexOrd[p-1+t]):
         t +=1
       q = SortOrd[p-1]
-      c += 1
       Partition[c] = SortOrd[p-1:p+t-1]
       Cubes[CubeCoord[q,0],CubeCoord[q,1], CubeCoord[q,2]] = c
+      c += 1
       p += t
     return Partition, CubeCoord, Info, Cubes
 

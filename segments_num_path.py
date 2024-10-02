@@ -1,4 +1,3 @@
-DEBUG= True
 import numpy as np
 from tools.define_cut import define_cut
 from tools.cut_components import cut_components
@@ -49,7 +48,7 @@ def segments_num_path(cover, Base, Forb, PathNum):
 
   # Initialize SChi
   SChi[0] = np.zeros(5000, dtype=np.uint32)
-  C = np.zeros(2000)
+  C = np.zeros(200)
   for i in range(1, a):
     SChi[i] = C
   NChi = np.zeros(a, dtype=np.uint32)  # Number of child segments found for each segment
@@ -65,7 +64,7 @@ def segments_num_path(cover, Base, Forb, PathNum):
 
   ForbAll[Forb] = True
   ForbAll[Base] = True
-  Forb = ForbAll     # The forbidden sets for the segment under expansion
+  Forb = np.copy(ForbAll)     # The forbidden sets for the segment under expansion
 
   Continue = True   # True as long as the component can be semented further
   NewSeg = True     # True if the first Cut for the current segment
@@ -73,12 +72,13 @@ def segments_num_path(cover, Base, Forb, PathNum):
 
   # Segmenting stops when there are no more segments to be found
 
+  s_stop= 1 
   while Continue and (b < numB-1):
     # Update the forbiden sets
     Forb[Seg[numL-1]] = True
 
     # Define the study
-    Cut = define_cut(Nei, Seg[numL-1], Forb, Fal)
+    Cut = define_cut(Nei, np.copy(Seg[numL-1]), np.copy(Forb), np.copy(Fal))
     CutSize=len(Cut)
 
     if NewSeg:
@@ -87,31 +87,16 @@ def segments_num_path(cover, Base, Forb, PathNum):
 
     # Define the components of cut and study regions
     #numC = 0
-    if CutSize > 0:
-      CutComps, _ = cut_components(Nei, Cut, CutSize, Fal, Fal)
 
-      if DEBUG:
-        print(f"CutComps: {CutComps}")
-        print(f"len(CutComps): {len(CutComps)}")
+
+    if CutSize > 0:
+      CutComps, _ = cut_components(Nei, np.copy(Cut), CutSize, np.copy(Fal), np.copy(Fal))
       numC = len(CutComps)
       if numC >1:
-        StudyComps, Bases, CompSize, Cont, BaseSize = study_components(Nei, numS, Cut, CutComps, Forb, Fal, Fal)
-
-        if DEBUG:
-          print(f"############################")
-          print(f"Study components")
-          print(f"############################")
-          print(f"numC: {numC}")
-          print(f"len(Cont) {len(Cont)}")
-          print(f"Bases: {Bases}")
-          print(f"len(Bases) {len(Bases)}")
-          print(f"len(StudyComps) {len(StudyComps)}")
+        StudyComps, Bases, CompSize, Cont, BaseSize = study_components(Nei, numS, np.copy(Cut), CutComps, np.copy(Forb), np.copy(Fal), np.copy(Fal))
         numC = len(Cont)
     else:
       numC = 0
-    if DEBUG:
-      print(f"numC: {numC}")
-      
 
     # Classify study  region components
     if numC == 1:
@@ -125,8 +110,6 @@ def segments_num_path(cover, Base, Forb, PathNum):
     elif numC>1:
       # Classify the components of the Study region
       Class = component_classification(CompSize, Cont, BaseSize, CutSize)
-      if DEBUG:
-        print(f"len(Class): {len(Class)}")
 
       # Use the bumber of paths to decide which component is the continuation
       N = np.zeros(numC, dtype=np.int32)
@@ -148,19 +131,17 @@ def segments_num_path(cover, Base, Forb, PathNum):
           Base = Bases[i]
           ForbAll[Base] = True
           Forb[StudyComps[i]] = True
-          J = Forb[Cut]
+          J = np.copy(Forb[Cut])
           Cut = Cut[~J]
           b += 1
           SBas[b] = Base
           SPar[b,:] = np.array([s, numL-1])
           NChi[s] = NChi[s] + 1
-          if DEBUG:
-            print(f"s: {s}")
-            print(f"NChi[s]: {NChi[s]}")
-          SChi[s][NChi[s]] = b
+          SChi[s][NChi[s]-1] = b -1
       
       # Define the new cut.
       # If the cut is empty, determine de new base
+      
       if len(Cut) == 0:
         Segs[s] = {key:Seg[key] for key in range(numL)}
         S = np.concatenate([Seg[key] for key in range(numL)])
@@ -209,7 +190,8 @@ def segments_num_path(cover, Base, Forb, PathNum):
     for j in range(len(S)):
       S[j] = (S[j]).astype(np.uint32)
     '''
-    S = {key: (S[key]).astype(np.uint32) for key in S.keys()}
+    #S = {key: (S[key]).astype(np.uint32) for key in S.keys()}
+    S = {key: S[key] for key in range(len(S))}
     Segs[i] = S
   segment = {}
   segment['segments'] = Segs

@@ -1,17 +1,12 @@
-DEBUG = False
 import numpy as np
 from tools.unique_elements import unique_elements
 
 def study_components(Nei, numS, Cut, CutComps, Forb, Fal, isFalse):
-  Cut = np.copy(Cut)
-  #CutComps = np.copy(CutComps)
-  Forb = np.copy(Forb)
-  Fal = np.copy(Fal)
-  isFalse = np.copy(isFalse)
   Study = {}
   StudySize = np.zeros(numS,dtype=np.int32)
   Study[0] = Cut
   StudySize[0] = len(Cut)
+
   if numS >= 2:
     N = np.copy(Cut)
     i = 1
@@ -46,31 +41,17 @@ def study_components(Nei, numS, Cut, CutComps, Forb, Fal, isFalse):
   Comp = np.zeros(studysize, dtype=np.int32)
   while i <= numC:
     C = CutComps[i-1]
-    C = np.array(C)
     while j < studysize:
-      if DEBUG:
-        print(f"type(C): {type(C)}")
       if isinstance(C, np.ndarray):
-        a = C.size
-      else:
-        a = 0
+        a = len(C)
+      elif isinstance(C, (np.int32, np.uint32)):
+        a = 1 
       Comp[:a] = C
       Fal[C] = False
-      if DEBUG:
-        print(f"C: {C}")
       if a>1:
         Add = unique_elements(np.concatenate([Nei[key] for key in C]), isFalse)
       else:
         Add =  Nei[C.item()] 
-      '''
-      elif a ==1 and len(C.shape) == 1:
-        if DEBUG:
-          print(f"C: {C}")
-          print(f"C.item(): {C.item()}")
-          print(f"type(C): {type(C)}")
-          print(f"isinstance(C, np.ndarray): {isinstance(C, np.ndarray)}")
-        Add =  Nei[C[0]] 
-      '''
       t =a
       I = Fal[Add]
       Add = Add[I]
@@ -83,14 +64,6 @@ def study_components(Nei, numS, Cut, CutComps, Forb, Fal, isFalse):
             np.append(Comp, Add[a-d])
         else:
           Comp[t+1-1:t+a] = Add
-        '''
-        if (len(Comp)+1 == a + t) and (len(Comp[t+1-1:t+a]) < len(Add)):
-          Comp[t+1-1:t+a] = Add[:a-1]
-
-          np.append(Comp,Add[a-1])
-        else:
-          Comp[t+1-1:t+a] = Add
-        '''
         #Comp[t+1-1:t+a] = Add
 
         Fal[Add] = False
@@ -102,7 +75,7 @@ def study_components(Nei, numS, Cut, CutComps, Forb, Fal, isFalse):
         a = len(Add)
       j += t
       k += 1
-      Components[k-1] = Comp[:t]
+      Components[k-1] = np.copy(Comp[:t])
       CompSize[k-1] = t
       if j < studysize:
         C = []

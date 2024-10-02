@@ -1,4 +1,3 @@
-DEBUG=False
 import numpy as np
 from collections import defaultdict
 
@@ -31,13 +30,7 @@ def remove_lowest_points(P, Points):
   R = np.floor((P[:,:2] - Min[:2])/SQ) + 1
   LexOrd = R[:,0] + Nx*(R[:,1]-1)
   I = np.argsort(LexOrd)
-  if DEBUG:
-    print(f"R: {R}")
-    print(f"len(R): {len(R)}")
   R = (R[I,:]).astype(np.int32)
-  if DEBUG:
-    print(f"R: {R}")
-    print(f"len(R): {len(R)}")
   LexOrd = np.sort(LexOrd)
   PointInd = np.asarray(range(numP), dtype=np.uint32)
   PointInd = PointInd[I]
@@ -57,13 +50,6 @@ def remove_lowest_points(P, Points):
   
   ## Remove the lowest points
   Pass = np.ones(numP, dtype='bool')
-  if DEBUG:
-    print(f"######################")
-    print(f"Par.keys(): {Par.keys()}")
-    '''
-    for key in Par.keys():
-      print(f"len(Par): {len(Par[tuple(key)])}")
-    '''
   for i in range(int(Nx)):
     for j in range(int(Ny)):
       points = Par[tuple([i,j])]
@@ -77,11 +63,6 @@ def remove_lowest_points(P, Points):
         if k > 0:
           k = k - 1
         Pass[points] = P[points,2] > Edges[0][k]
-        if DEBUG:
-          print(f"N2: {N2}")
-          print(f"Edges: {Edges}")
-          print(f"CS: {CS}")
-          exit()
 
   numP0 = len(Points)
   Ind = np.asarray(range(numP0), dtype=np.uint32)
@@ -93,8 +74,6 @@ def remove_lowest_points(P, Points):
   print(f"\t Filtered points: {numP-numP2}")
   print(f"\t Points left: {numP2}")
 
-  if DEBUG:
-    exit()
 
 
   return P, Points
