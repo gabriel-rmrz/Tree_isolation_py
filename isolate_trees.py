@@ -1,3 +1,4 @@
+DEBUG=False
 import numpy as  np
 import yaml
 from plotting.plot_point_cloud import plot_point_cloud
@@ -86,9 +87,9 @@ def isolate_trees(P, Hei=None, cover=None):
   Ce = P[cover['center'],:]
   sec = (H > 50) *(H < 400) 
   plot_point_cloud(Ce[sec,:], "centers_50_400")
-  #plot_segs(P, StemSec,5, cover['ball'])
+  plot_segs(P, StemSec,5, cover['ball'])
 
-  ## 4. Determine the shortest path of the patched to the "StemSec"
+  ## 4. Determine the shortest path of the patches to the "StemSec"
   print('\t -------------------------------------')
   print('\t Computing the shortest paths...')
   print('\t -------------------------------------')
@@ -113,8 +114,6 @@ def isolate_trees(P, Hei=None, cover=None):
   inputs['GD'] = 0.05
   inputs['DHRel'] = 0.25
   inputs['MaxDHRel'] = 1.75
-
-  # Determine the shortest paths
   #shortest_paths_height return  PathNum, PathDist, EndSet
   EndSet, cover, PathLen = shortest_paths_height(np.copy(P), cover, np.copy(Hei), np.copy(Base), np.copy(BaseDist), inputs)
 
@@ -144,6 +143,9 @@ def isolate_trees(P, Hei=None, cover=None):
   Forb[base] = False
   # Determine the shortest paths (assumes the trees are connected to the gound level)
   _, PathLen, EndSet = shortest_paths(cover, np.copy(base), np.copy(Forb))
+
+  if DEBUG:
+    exit()
 
   ## Define the bottoms of the trees as thos sets whose path_lenght/height
   #  ratio is less than 1.1
@@ -184,16 +186,19 @@ def isolate_trees(P, Hei=None, cover=None):
   Forb[np.concatenate([Trees[key] for key in Trees.keys()])] = False
   PathNum, _1, _2  = shortest_paths(cover, np.copy(base), np.copy(Forb))
   # Segment each tree and select only the stem
+  Segments = {}
   for i in range(numT):
     if not(i in Trees.keys()):
       continue
     Forb = np.ones(numB, dtype='bool')
     Forb[Trees[i]] = False
     segment =segments_num_path(cover, Bases[i],Forb,PathNum)
+    Segments[f"{i}"] = segment
     plot_segs(P,{0:Trees[i]},1,cover["ball"],f"tree_{i}")
     #plot_segs(P,segment['segments'][0],1,cover["ball"],f"segs_{i}")
     plot_tree_structure(P,cover,segment,1,10,0, f"segs_{i}")
 
+  return P, inputs,  cover, Trees, Segments
 
   
 

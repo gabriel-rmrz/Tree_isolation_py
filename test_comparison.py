@@ -30,14 +30,16 @@ def get_pointcloud(las, isRGB=False):
 
 def run_subprocess():
     input_file_name = 'extracted_points.las'
-    command = f''' matlab -sd ~/Documents/MATLAB/Matlab_tree_isolation/ -batch "addpath('~/Documents/MATLAB/Matlab_tree_isolation/lasdata', '~/Documents/MATLAB/Matlab_tree_isolation/tools','~/Documents/MATLAB/Matlab_tree_isolation/plotting'); P_temp = lasdata('{input_file_name}'); P = 0.1*[P_temp.x P_temp.y P_temp.z];isolate_trees(P);exit" '''
+    matlab_dir = "~/Documents/MATLAB/Matlab_tree_isolation"
+    matlab_dir = "/Users/garamire/Work/RemoteSensing/Tree_isolation"
+    command = f''' matlab -sd {matlab_dir} -batch "addpath('{matlab_dir}/lasdata', '{matlab_dir}/tools','{matlab_dir}/plotting'); P_temp = lasdata('{input_file_name}'); P = 0.1*[P_temp.x P_temp.y P_temp.z];isolate_trees(P);exit" '''
     subprocess.run(command, shell=True)
 
 def run_isolation():
   with open('configs/inputs.yaml', 'r') as file:
     inputs = yaml.safe_load(file)
   las = laspy.read('extracted_points.las')      
-  las = laspy.read('/home/garamire/work/remote_sensing/treevol/outputs/Region_9.las')      
+  #las = laspy.read('/home/garamire/work/remote_sensing/treevol/outputs/Region_9.las')      
   #las = laspy.read('/home/garamire/work/remote_sensing/treevol/Area_2_LAS_15.las')      
 
   P = 0.1 * np.stack([las.x, las.y, las.z], axis=0).transpose((1,0))

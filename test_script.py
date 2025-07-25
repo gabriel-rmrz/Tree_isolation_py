@@ -1,6 +1,7 @@
-TEST_ISO= True
+TEST_ISO= False
+TEST_AN_TREES= True
 TEST_FILT=False
-TEST_COV= False
+TEST_COV= False 
 DEBUG=False
 import numpy as np
 import pandas as pd
@@ -10,6 +11,7 @@ import open3d as o3d
 from cover_sets_plot import cover_sets_plot
 from filtering_plot import filtering_plot
 from isolate_trees import isolate_trees
+from analyse_trees import analyse_trees
 from tools.remove_bottom import remove_bottom
 from tools.compute_height import compute_height 
 #from pycallgraph import PyCallGraph
@@ -46,10 +48,23 @@ def main():
   if DEBUG:
     print(f"type(P): {type(P)}")
     exit()
+  if TEST_AN_TREES:
+    P, inputs, cover, Trees, Segments = isolate_trees(P)
+    print(f"Segments.keys(): {Segments.keys()}")
+    print(f"Segments['1'].keys(): {Segments['1'].keys()}")
+    print(f"Segments['0']['parent']: {Segments['0']['parent']}")
+    print(f"Segments['0']['segments'].keys(): {Segments['0']['segments'].keys()}")
+    print(f"Segments['0']['children'].keys(): {Segments['0']['children'].keys()}")
+    print(f"Segments['0'].keys(): {Segments['0'].keys()}")
+    print(f"Segments['1']['parent']: {Segments['1']['parent']}")
+    print(f"Segments['1']['segments'].keys(): {Segments['1']['segments'].keys()}")
+    print(f"Segments['1']['children'].keys(): {Segments['1']['children'].keys()}")
+    analyse_trees(P, inputs, cover, Trees, Segments)
+    exit()
+
 
   if TEST_ISO:
     isolate_trees(P)
-  exit()
 
 
   if TEST_FILT:
@@ -62,10 +77,10 @@ def main():
     plt.hist(Hei,bins=100)
     plt.savefig('plots/Hei.png')
     plt.clf()
-    Hei_mat = scipy.io.loadmat('Hei.mat')
-    print(Hei_mat['Hei'])
-    plt.hist(Hei_mat['Hei'].flatten(),bins=100)
-    plt.savefig('plots/Hei_mat.png')
+    #Hei_mat = scipy.io.loadmat('Hei.mat')
+    #print(Hei_mat['Hei'])
+    #plt.hist(Hei_mat['Hei'].flatten(),bins=100)
+    #plt.savefig('plots/Hei_mat.png')
 
   if TEST_COV:
     Pass, Hei, Ground, Tri = filtering_plot(P,inputs['inputs'])
