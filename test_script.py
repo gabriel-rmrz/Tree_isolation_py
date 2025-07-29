@@ -4,10 +4,15 @@ TEST_FILT=False
 TEST_COV= False 
 DEBUG=False
 import numpy as np
+print('here')
 import pandas as pd
+print('here')
 import yaml
+print('here')
 import laspy
+print('here')
 import open3d as o3d
+print('here')
 from cover_sets_plot import cover_sets_plot
 from filtering_plot import filtering_plot
 from isolate_trees import isolate_trees
@@ -17,9 +22,11 @@ from tools.compute_height import compute_height
 #from pycallgraph import PyCallGraph
 #from pycallgraph.output import GraphvizOutput
 
+print('here')
 import matplotlib.pyplot as plt
 import scipy.io
 from plotting.plot_segs import plot_segs
+print('here')
 
 
 def get_pointcloud(las, isRGB=False):
@@ -34,6 +41,7 @@ def get_pointcloud(las, isRGB=False):
   return geom
 
 def main():
+  print('here')
   with open('configs/inputs.yaml', 'r') as file:
     inputs = yaml.safe_load(file)
   las = laspy.read('extracted_points.las')      
@@ -113,6 +121,7 @@ def main():
 
 
 if __name__ == '__main__':
+  print('here')
   main()
 
   

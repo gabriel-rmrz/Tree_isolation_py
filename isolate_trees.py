@@ -75,8 +75,10 @@ def isolate_trees(P, Hei=None, cover=None):
   
   StemSec_k = {f"k{key+1}":key+1 for key in StemSec.keys()}
   StemSec2 = {f"k{key+1}": value+1 for key, value in StemSec.items()}
+  '''
   pydict_to_matstruct(StemSec2, 'matlab/StemSec.mat','StemSec')
   pydict_to_matstruct(StemSec_k, 'matlab/StemSec_k.mat','StemSec_k')
+  '''
 
   n = len(StemSec)
   print(f"{n} stem sections determined")
