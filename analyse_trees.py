@@ -1,8 +1,9 @@
-DEBUG=True
+DEBUG = False
 import json
 import time 
 import numpy as np
-def cylinders(P, cover, segment, inputs):
+from plotting.plot_point_cloud import plot_point_cloud as plot_pc
+def cylinders(P, cover, Segments, inputs):
   '''
   Computes the following quantities for every segment:
   - radius
@@ -10,7 +11,21 @@ def cylinders(P, cover, segment, inputs):
   - axis
   - start
   '''
-  print(segment)
+
+  for key in Segments.keys():
+    trunk = []
+    for ind, seg in Segments[key]['segments'][0].items():
+      trunk = np.concatenate((trunk, seg), axis=0)
+    trunk_points = []
+
+    for t in trunk:
+      print(f"cover['center'][t.astype(int)]: {cover['center'][t.astype(int)]}")
+      print(f"t: {t}")
+      trunk_points.append(cover['center'][t.astype(int)])
+    #trunk_points=np.concatenate(trunk_points)
+    print(trunk_points)
+    plot_pc(P[trunk_points], "segment_0_tree_0")
+  print(f"cover.keys(): {cover.keys()}")
   return 0
 
 def analyse_trees(P, inputs, cover, Trees, Segments):
@@ -45,6 +60,38 @@ def analyse_trees(P, inputs, cover, Trees, Segments):
   # This is the index of the tree that are selected to be analysed. All of them are selected with this configuration.
   Model = np.ones(numT, dtype=bool)
   # TODO: Here are defined some variable for the field measurements. We will only work with the PointCloud measurement for the moment.
+  if DEBUG:
+    print("-------------------------------------------------------------")
+    print(f"Segments.keys(): {Segments.keys()}") # TEST: 0 and 1 (we have two trees)
+    print(f"Segments['0'].keys(): {Segments['0'].keys()}")
+    print("-------------------------------------------------------------")
+    #Segments['0'].keys(): dict_keys(['segments', 'parent', 'children'])
+    print(f"type(Segments['0']['segments']): {type(Segments['0']['segments'])}")
+    print(f"type(Segments['0']['parent']): {type(Segments['0']['parent'])}")
+    print(f"type(Segments['0']['children']): {type(Segments['0']['children'])}")
+    print("-------------------------------------------------------------")
+    print(f"Segments['0']['segments'].keys(): {Segments['0']['segments'].keys()}")
+    print(f"Segments['0']['parent']: {Segments['0']['parent']}")
+    print(f"Segments['0']['children'].keys(): {Segments['0']['children'].keys()}")
+    print("-------------------------------------------------------------")
+    for ind, seg in Segments['0']['segments'].items():
+      print(f"{ind}, len(seg): {len(seg)}")
+    print("-------------------------------------------------------------")
+    trunk = []
+    for ind, seg in Segments['0']['segments'][0].items():
+      print(f"{ind}, len(seg): {len(seg)}")
+      trunk = np.concatenate((trunk, seg), axis=0)
+
+    trunk_points = []
+    for t in trunk:
+      trunk_points.append(cover['ball'][t])
+    trunk_points=np.concatenate(trunk_points)
+    print(f"P[trunk_points]: {P[trunk_points]}")
+    plot_pc(P[trunk_points], "segment_0_tree_0")
+    exit()
+    print(f"trunk: {trunk}")
+
+    exit()
   col = [
     [0.00, 0.00, 1.00],
     [0.00, 0.50, 0.00],
@@ -68,24 +115,11 @@ def analyse_trees(P, inputs, cover, Trees, Segments):
     [0.99, 0.41, 0.23]
   ]
 
-  if DEBUG:
-    print(len(Trees[0]))
-    print(f"cover.keys(): {cover.keys()}")
-    print(f"cover['inputs'].keys(): {cover['inputs'].keys()}")
-    #print(f"cover): {cover}")
-    exit()
   i_time = time.time() # Initial running time
   Diam = np.zeros([numT,16], dtype=np.int32)
-  for i in range(numT):
-    if Model[i] and len(Trees[i]) > 0:
-      segment = {}
-
-      segment['segments'] = Trees[i] # TODO: From this we will only take into account stem segments.
-      segment['ParentSegment'] = 0
-      segment['ChildSegment'] = {}
-      cyls = cylinders(P, cover, segment, inputs)
+  print(f"We have {len(Segments)} trees.")
+  cyls = cylinders(P, cover, Segments, inputs)
 
 
   f_time = time.time()
 
-  print("TEST message")
