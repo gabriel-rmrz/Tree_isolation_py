@@ -12,6 +12,9 @@ Ported from Pasi Raumonen code
 
 
 # TODO
+ - Implement MCD for the robust PCA.
+
+
  - Check if the fact tha variable 'Unvisited', in the shortest paths algorithms, is initialiazed with 0's (which is also an valid index for the covers) has any effect in the implementation of the algorithm.
  - Implement a way to test the output of python in matlab and viceversa.
  - Define type uint that would work as the matlab one when we try to put a negative value in it
