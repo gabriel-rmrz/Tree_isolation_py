@@ -195,7 +195,7 @@ def isolate_trees(P, Hei=None, cover=None):
     Forb = np.ones(numB, dtype='bool')
     Forb[Trees[i]] = False
     segment =segments_num_path(cover, Bases[i],Forb,PathNum)
-    Segments[f"{i}"] = segment
+    Segments[i] = segment
     plot_segs(P,{0:Trees[i]},1,cover["ball"],f"tree_{i}")
     #plot_segs(P,segment['segments'][0],1,cover["ball"],f"segs_{i}")
     plot_tree_structure(P,cover,segment,1,10,0, f"segs_{i}")

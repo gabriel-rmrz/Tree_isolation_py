@@ -46,17 +46,6 @@ def main():
   if TEST_AN_TREES:
     P, inputs, cover, Trees, Segments = isolate_trees(P)
     analyse_trees(P, inputs, cover, Trees, Segments)
-    if DEBUG:
-      print(f"Segments.keys(): {Segments.keys()}")
-      print(f"Segments['1'].keys(): {Segments['1'].keys()}")
-      print(f"Segments['0']['parent']: {Segments['0']['parent']}")
-      print(f"Segments['0']['segments'].keys(): {Segments['0']['segments'].keys()}")
-      print(f"Segments['0']['children'].keys(): {Segments['0']['children'].keys()}")
-      print(f"Segments['0'].keys(): {Segments['0'].keys()}")
-      print(f"Segments['1']['parent']: {Segments['1']['parent']}")
-      print(f"Segments['1']['segments'].keys(): {Segments['1']['segments'].keys()}")
-      print(f"Segments['1']['children'].keys(): {Segments['1']['children'].keys()}")
-      exit()
 
 
   if TEST_ISO:
