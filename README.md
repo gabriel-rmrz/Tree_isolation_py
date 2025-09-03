@@ -12,7 +12,9 @@ Ported from Pasi Raumonen code
 
 
 # TODO
+ - VERY IMPORTANT!!!Check the indices of SegmentChild (I'm almost certain that it should start with -1 or something like that)
  - Implement MCD for the robust PCA.
+
 
 
  - Check if the fact tha variable 'Unvisited', in the shortest paths algorithms, is initialiazed with 0's (which is also an valid index for the covers) has any effect in the implementation of the algorithm.
