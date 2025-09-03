@@ -105,6 +105,24 @@ import numpy as np
 #    in "regions"
 #
 
+def cylinder_fitting(P, Points, IndPoints, numL, si):
+  return 1,2 
+def verticalcat(Dict):
+  # Vertical concatenation of the given dictionary into a vector
+
+  keys = sorted(Dict.keys())
+  DictSize = [len(Dict[k]) for k in keys] # Determine the size of every dictionary
+  numC = len(Dict) # Number of elements
+  IndElements = np.zeros((numC, 2), dtype=int) # indices for elements in each cell
+  IndElements[:,1] = np.cumsum(DictSize)
+  IndElements[1:,0] = IndElements[1:,0] + IndElements[:-1, 1] 
+  #IndElements[:,0] = IndElements[:,0]
+  Vector = np.zeros(np.sum(DictSize), dtype=int)
+  for j in range(numC):
+    Vector[IndElements[j,0]:IndElements[j,1]] = Dict[keys[j]]
+  
+  return Vector, IndElements
+  
 
 def cylinders(P, cover, segment, inputs):
   # Initialization of variables
@@ -136,32 +154,67 @@ def cylinders(P, cover, segment, inputs):
   ## Determine suitable order of segments (from trunk to the "youngest" child)
   bases = np.arange(NumOfSeg, dtype=int)
   if DEBUG:
-    print(bases)
+    print(f"SChi: {SChi}")
 
-    print(f"bases: {bases}")
     print(f"SPar[:,0] == 0: {SPar[:,0] == 0}")
   bases = bases[SPar[:,0] == 0]
-  if DEBUG:
-    print(bases)
   numB = len(bases)
   SegmentIndex= np.zeros(NumOfSeg, dtype=int)
+  if DEBUG:
+    print(f"bases: {bases}")
+    print(f"len(bases): {len(bases)}")
+    print(f"SegmentIndex: {SegmentIndex}")
+    print(f"len(SegmentIndex): {len(SegmentIndex)}")
   numC = 0
   for i in range(numB):
+    if numC == NumOfSeg:
+      break
     numC = numC+1
-    SegmentIndex[numC -1] == bases[i]
+    SegmentIndex[numC -1] = bases[i]
     if DEBUG:
-      print(f"SChi: {SChi}")
-      print(f"bases[i]: {bases[i]}")
-      for schi in SChi[bases[i]]:
-        print(f"schi: {schi}")
-    S = [schi for schi in SChi[bases[i]]]
-    while len(S):
+      print(f"SegmentIndex(in for): {SegmentIndex}")
+      print(f"bases(in for): {bases}")
+    S = [schi for schi in SChi[bases[i]] if schi != 0] #TODO: Look for a way to not include 0 as child.
+    
+    while S:
       n = len(S)
       SegmentIndex[numC-1+1:numC-1+n+1] = S
+      if DEBUG:
+        print(f"SegmentIndex(in while): {SegmentIndex}")
       numC+= n
-      S = [schi for s in S for schi in SChi[s]]
-  print(S)
+      S = [schi for s in S if s != 0 for schi in SChi[s] ] #TODO: Look for a way to not include 0 as child.
+  if DEBUG:
+    print(f"SegmentIndex: {SegmentIndex}")
 
+  ## Fit cylinders individually for each segment
+  for k in range(NumOfSeg):
+    si = SegmentIndex[k]
+    if si > -1:
+      ## Some initialization about the segment
+      Seg = Segs[k] # the current segment under analysis
+      numL = len(Seg) # number of cover set layers in the segment
+      Sets, IndSets = verticalcat(Seg) # the cover sets in the segment
+
+      numS = len(Sets) # number of cover sets in the current segment
+      Points = np.concatenate([ cover['ball'][s] for s in Sets]) # the points of the segments
+      numP = len(Points) # number of points in the segment
+
+      # Determine indices of points for faster definition of regions
+      #BallSize = [ cs.size for s in Sets for cs in cover['ball'][s]]
+      BallSize = [ np.size(cover['ball'][s]) for s in Sets ]
+      IndPoints = np.zeros((numL,2), dtype=int) # indices for points in each layer of the segment
+      for j in range(numL):
+        IndPoints[j,1] = np.sum(BallSize[IndSets[j,0]:IndSets[j,1]])
+      IndPoints[:,1] = np.cumsum(IndPoints[:,1])
+      IndPoints[1:,0] = IndPoints[1:,0] + IndPoints[:-1, 1]
+      Base = Seg[0] # the base of the segment
+      numB = IndPoints[0,1] # number of points in the base
+
+      # Reconstruct only large enough segments
+      if (numL > 1) and (numP > numB) and (numS > 2) and (numP > 20) and len(Base) > 0:
+        cyl, Reg = cylinder_fitting(P, Points, IndPoints, numL, si)
+
+      
 
 
 
