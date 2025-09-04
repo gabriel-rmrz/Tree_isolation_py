@@ -105,7 +105,26 @@ import numpy as np
 #    in "regions"
 #
 
-def cylinder_fitting(P, Points, IndPoints, numL, si):
+def cylinder_fitting(P, Points, Ind, numL, si):
+  if numL > 6:
+    i0 = 0
+    i = 3 # indices of the first and las layers of the region
+    t = 0
+    Reg = {}
+    cyls = {}
+    regs = {}
+    data = np.zeros((11,4), dtype=int)
+    while i0 < numL - 3:
+      ## Fit at least three cylinders of different lengths
+      bot = Points[Ind[i0,0]:Ind[i0+1,1]]
+      Bot = np.average[P[bot,:]]
+      again = True
+      j = 0
+      while (i+j <=numL-1) and j<= 10 and (j<=2 || again):
+        ## Select points and estimate axis
+        RegC = Points[Ind[i0,0]:Ind[i+j,1]]
+
+
   return 1,2 
 def verticalcat(Dict):
   # Vertical concatenation of the given dictionary into a vector
