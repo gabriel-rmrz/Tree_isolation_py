@@ -2,6 +2,7 @@ DEBUG = True
 import numpy as np
 from tools.verticalcat import verticalcat
 from tools.surface_coverage_filtering import surface_coverage_filtering
+from least_squares_fitting.least_squares_cylinder import least_squares_cylinder
 # This file is part of TREEQSM.
 #
 # TREEQSM is free software: you can redistribute it and/or modify
@@ -164,12 +165,28 @@ def cylinder_fitting(P, Points, Ind, numL, si):
         # The region for the cylinder fitting:
         reg = RegC[Sec]
         Q0 = P[reg,:]
-        Keep, c0 = surface_coverage_filtering(Q0,c0, 0.02,20)
-        print(Keep)
-        exit()
+        
 
         ## Filter points and estimate radius
-        #if len(Q0) > 20:
+        if len(Q0) > 20:
+          Keep, c0 = surface_coverage_filtering(Q0,c0, 0.02,20)
+          reg = reg[Keep]
+          Q0 = Q0[Keep,:]
+        else:
+          c0['radius'] = 0.01
+          c0['SurfCov'] = 0.05
+          c0['mad'] = 0.01
+          c0['conv'] = 1
+          c0['rel'] = 1
+
+        ## Fit cylinder
+        if len(Q0) > 9:
+          if i >= numL-1 and t ==0:
+            c = least_squares_cylinder(Q0, c0)
+
+
+        exit()
+
 
   return 1,2 
 
