@@ -1,5 +1,7 @@
 DEBUG = True
 import numpy as np
+from tools.verticalcat import verticalcat
+from tools.surface_coverage_filtering import surface_coverage_filtering
 # This file is part of TREEQSM.
 #
 # TREEQSM is free software: you can redistribute it and/or modify
@@ -116,32 +118,60 @@ def cylinder_fitting(P, Points, Ind, numL, si):
     data = np.zeros((11,4), dtype=int)
     while i0 < numL - 3:
       ## Fit at least three cylinders of different lengths
-      bot = Points[Ind[i0,0]:Ind[i0+1,1]]
-      Bot = np.average[P[bot,:]]
+      bot = Points[Ind[i0,0]:Ind[i0+1,1]+1]
+      Bot = np.average(P[bot,:], axis=0)
+      print(Bot)
       again = True
       j = 0
-      while (i+j <=numL-1) and j<= 10 and (j<=2 || again):
+      c0={}
+      while (i+j <=numL-1) and j<= 10 and (j<=2 or again):
         ## Select points and estimate axis
-        RegC = Points[Ind[i0,0]:Ind[i+j,1]]
+        RegC = Points[Ind[i0,0]:Ind[i+j,1]+1]  #candidate region
+        # Top axis point of the region:
+        top = Points[Ind[i+j-1,0]:Ind[i+j,1]+1]
+        Top = np.average(P[top,:], axis=0)
+        Axis = Top-Bot
+        c0['axis'] = Axis/np.linalg.norm(Axis)
+        #Compute the height along the axis
+        if DEBUG:
+          print(f"P.shape: {P.shape}")
+          print(f"c0['axis'].shape: {c0['axis'].shape}")
+          print(f"c0['axis']: {c0['axis']}")
+        h = np.dot(P[RegC,:]-Bot,np.transpose(c0['axis']))
+        if DEBUG:
+          print(f"h: {h}")
+        minh = np.min(h)
+        # Correct Bot to correspond to the real bottom
+        if j==0:
+          Bot = Bot + minh*c0['axis']
+          c0['start'] = Bot
+          h = np.dot(P[RegC,:] -Bot,c0['axis'])
+          if DEBUG:
+            print(f"h: {h}")
+          minh = np.min(h)
+        if (i+j)>= numL-1:
+          ht = np.dot(Top-c0['start'],c0['axis'])
+          if DEBUG:
+            print(f"ht: {ht}")
+          Top = Top + (np.max(h)-ht)*c0['axis']
+        # Compute the height of the Top
+        ht = np.dot(Top-c0['start'], c0['axis'])
+        if DEBUG:
+          print(f"ht: {ht}")
+          print(f"h: {h}")
+        Sec = (h <= ht) & (h>=minh) # only points below the Top
+        c0['length'] = ht-minh # length of the region/cylinder
+        # The region for the cylinder fitting:
+        reg = RegC[Sec]
+        Q0 = P[reg,:]
+        Keep, c0 = surface_coverage_filtering(Q0,c0, 0.02,20)
+        print(Keep)
+        exit()
 
+        ## Filter points and estimate radius
+        #if len(Q0) > 20:
 
   return 1,2 
-def verticalcat(Dict):
-  # Vertical concatenation of the given dictionary into a vector
-
-  keys = sorted(Dict.keys())
-  DictSize = [len(Dict[k]) for k in keys] # Determine the size of every dictionary
-  numC = len(Dict) # Number of elements
-  IndElements = np.zeros((numC, 2), dtype=int) # indices for elements in each cell
-  IndElements[:,1] = np.cumsum(DictSize)
-  IndElements[1:,0] = IndElements[1:,0] + IndElements[:-1, 1] 
-  #IndElements[:,0] = IndElements[:,0]
-  Vector = np.zeros(np.sum(DictSize), dtype=int)
-  for j in range(numC):
-    Vector[IndElements[j,0]:IndElements[j,1]] = Dict[keys[j]]
-  
-  return Vector, IndElements
-  
 
 def cylinders(P, cover, segment, inputs):
   # Initialization of variables
@@ -223,7 +253,7 @@ def cylinders(P, cover, segment, inputs):
       BallSize = [ np.size(cover['ball'][s]) for s in Sets ]
       IndPoints = np.zeros((numL,2), dtype=int) # indices for points in each layer of the segment
       for j in range(numL):
-        IndPoints[j,1] = np.sum(BallSize[IndSets[j,0]:IndSets[j,1]])
+        IndPoints[j,1] = np.sum(BallSize[IndSets[j,0]:IndSets[j,1]+1])
       IndPoints[:,1] = np.cumsum(IndPoints[:,1])
       IndPoints[1:,0] = IndPoints[1:,0] + IndPoints[:-1, 1]
       Base = Seg[0] # the base of the segment
