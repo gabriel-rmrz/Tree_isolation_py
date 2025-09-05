@@ -1,4 +1,5 @@
 import numpy as np
+from least_squares_fitting.rotate_to_z_axis import rotate_to_z_axis
 '''
  This file is part of TREEQSM.
  
@@ -16,7 +17,7 @@ import numpy as np
  along with TREEQSM.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-def least_squares_cylinder(P,cyl0,weight,Q):
+def least_squares_cylinder(P,cyl0,weight=None,Q=None):
   '''
   ---------------------------------------------------------------------
   LEAST_SQUARES_CYLINDER.M   Least-squares cylinder using Gauss-Newton.
@@ -79,4 +80,24 @@ def least_squares_cylinder(P,cyl0,weight,Q):
   Changes from version 1.0.0 to 1.1.0, 3 Oct 2019:  
   1) Bug fix: --> "Point = Rot0'*([par(1) par(2) 0]')..."
   '''
+  ## Initialize data and values
+  print('Here')
+  res = 0.03 # "Resolution level" for computing surface coverage
+  maxiter = 50 # maximum number of Gauss-Newton iterations
+  iter_ = 0
+  conv = False # Did the iteration converge
+  rel = True # Are the results reliable (condition number was not very bad)
+  if weight == None:
+    NoWeights = True
+  else:
+    NoWeights = False
+  
+  # Transform the data to close to standard position via a translation
+  # followed by a rotation
+  Rot0 = rotate_to_z_axis(cyl0['axis'])
+  Pt = (P-cyl0['start'])@Rot0
+  print(Pt)
+
+
+
   return 0, 1

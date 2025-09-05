@@ -181,8 +181,13 @@ def cylinder_fitting(P, Points, Ind, numL, si):
 
         ## Fit cylinder
         if len(Q0) > 9:
+          print(numL)
+          print(t)
           if i >= numL-1 and t ==0:
+            print(numL)
+            print(len(Q0))
             c = least_squares_cylinder(Q0, c0)
+          #elif i>=numL and t>0:
 
 
         exit()

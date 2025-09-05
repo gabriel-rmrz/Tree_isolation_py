@@ -8,7 +8,7 @@ import numpy as np
 from sklearn.covariance import MinCovDet
 
 from plotting.plot_point_cloud import plot_point_cloud as plot_pc
-from plotting.plot_slices import plot_slices 
+#from plotting.plot_slices import plot_slices 
 from cylinders import cylinders
 
 
