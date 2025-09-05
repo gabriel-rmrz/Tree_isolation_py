@@ -125,6 +125,7 @@ def cylinder_fitting(P, Points, Ind, numL, si):
       again = True
       j = 0
       c0={}
+      #CylTop = c['start']+c['length']+c['axis']
       while (i+j <=numL-1) and j<= 10 and (j<=2 or again):
         ## Select points and estimate axis
         RegC = Points[Ind[i0,0]:Ind[i+j,1]+1]  #candidate region
@@ -181,13 +182,39 @@ def cylinder_fitting(P, Points, Ind, numL, si):
 
         ## Fit cylinder
         if len(Q0) > 9:
-          print(numL)
-          print(t)
           if i >= numL-1 and t ==0:
-            print(numL)
-            print(len(Q0))
             c = least_squares_cylinder(Q0, c0)
-          #elif i>=numL and t>0:
+          elif i >=numL-1 and t>0:
+            h = (Q0 - CylTop)@np.transpose(c0['axis'])
+            I = h >= 0
+            Q = Q0[I,:] # the section
+            reg = reg[I]
+            n2 = len(Q)
+            n1 = np.count_nonzero(~I)
+            if (n2 > 9) and (n2 >5):
+              Q0 = np.concatenate((Q[~I,:],Q)) # the point cloud for cylinder fitting
+              W = np.concatenate((1/3*np.ones(n2), 2/3*np.ones(n1))) # the weights
+              c = least_squares_cylinder(Q0,c0,W,Q)
+            else:
+              c = least_squares_cylinder(Q0,c0)
+          elif t == 0:
+            top = Points[Ind[i+j-3,0]:Ind[i+j-2,1]+1]
+            Top = np.average(P[top,:])
+            ht = (Top-Bot)@np.transpose(c0['axis'])
+            h = (Q0-Bot)@np.transpose(c0['axis'])
+            I = (h<=ht)
+            Q = Q0[I,:] # the section
+            reg = reg[I]
+            n2 = len(Q)
+            n3 = np.count_nonzero(~I)
+            print(f"c0['radius']: {c0['radius']}")
+            if (n2 > 9) and (n3 > 5):
+              Q0 = np.concatenate((Q, Q0[I,:])) # the point cloud for cylinder fitting
+              W = np.concatenate((2/3*np.ones(n2), 1/3*np.ones(n3))) # the weights
+              c = least_squares_cylinder(Q0, c0, W, Q)
+            else:
+              c = least_squares_cylinder(Q0,c0)
+
 
 
         exit()

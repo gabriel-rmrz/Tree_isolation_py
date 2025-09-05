@@ -92,7 +92,7 @@ def surface_coverage_filtering(P,c,lh,numS):
   LexOrd = LexOrd[SortOrd]
   ds = d[SortOrd]
   # Filtering for sector-layer intersection
-  Dis = np.zeros((numL, numS), dtype=int)
+  Dis = np.zeros((numL, numS))
   Pass = np.zeros(numP, dtype=bool)
   p = 0 # index of point under processing
   k = 0 # number of nonempty cells

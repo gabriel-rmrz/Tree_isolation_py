@@ -31,7 +31,7 @@ def rotate_to_z_axis(Vec):
   '''
   D = np.cross(Vec, [0, 0, 1])
   if np.linalg.norm(D) > 0.:
-    a = np.acos(Vec[2])
+    a = np.arccos(Vec[2])
     R = rotation_matrix(D, a)
   else:
     R = np.identity(3)

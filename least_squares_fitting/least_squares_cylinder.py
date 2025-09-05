@@ -1,5 +1,8 @@
 import numpy as np
 from least_squares_fitting.rotate_to_z_axis import rotate_to_z_axis
+from least_squares_fitting.func_grad_cylinder import func_grad_cylinder
+from least_squares_fitting.form_rotation_matrices import form_rotation_matrices
+from tools.surface_coverage import surface_coverage
 '''
  This file is part of TREEQSM.
  
@@ -17,7 +20,7 @@ from least_squares_fitting.rotate_to_z_axis import rotate_to_z_axis
  along with TREEQSM.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-def least_squares_cylinder(P,cyl0,weight=None,Q=None):
+def least_squares_cylinder(P,cyl0,weight=None,Q=None, I=None):
   '''
   ---------------------------------------------------------------------
   LEAST_SQUARES_CYLINDER.M   Least-squares cylinder using Gauss-Newton.
@@ -94,10 +97,89 @@ def least_squares_cylinder(P,cyl0,weight=None,Q=None):
   
   # Transform the data to close to standard position via a translation
   # followed by a rotation
-  Rot0 = rotate_to_z_axis(cyl0['axis'])
-  Pt = (P-cyl0['start'])@Rot0
-  print(Pt)
+  Rot0, D_, a_ = rotate_to_z_axis(cyl0['axis'])
+  Pt = (P-cyl0['start'])@np.transpose(Rot0)
+
+  # Initial estimates
+  par = np.transpose([0, 0, 0, 0, cyl0['radius']])
 
 
+  ## Gauss-Newton algorithm
+  # find estimate of rotation-translation-radius parameters that transform
+  # the data so that the best-fit cylinder is one in standard position
+
+  while iter_ < maxiter and ~conv and rel:
+    ## Calculate the distances and Jacobian
+    if NoWeights:
+      d0, J = func_grad_cylinder(par, Pt)
+    else:
+      d0, J = func_grad_cylinder(par, Pt, weight)
+
+    ## Calculate update step
+    SS0 = np.linalg.norm(d0) # Squared sum of the distance
+    # solve for the system of equations:
+    # par[i+1] = par[i] - (J'J)^(-1)*J'd0[par[i]]
+    A = np.transpose(J)@J
+    b = np.transpose(J)@d0
+    p = np.linalg.solve(-A, b)
+    par = par+p # update the parameters
+    ## Check reliability
+    eps_float = np.finfo(np.float32).eps
+    rcond_est = 1.0/ np.linalg.cond(-A, p=1)
+
+    if rcond_est < 10000*eps_float:
+      rel = False
+
+    ## Check convergence:
+    # The distances with the new parameter values:
+    if NoWeights:
+      dist, _ = func_grad_cylinder(par, Pt)
+    else:
+      dist, _ = func_grad_cylinder(par, Pt, weight)
+
+    SS1 = np.linalg.norm(dist) # Squared sum of the distances
+    if np.abs(SS0-SS1) < 1e-4:
+      conv = True
+
+    iter_ +=1
+  ## Compute the cylinder parameters and other outputs
+  cyl = {}
+  cyl['radius'] = float(par[4]) # radius
+
+  # Inverse transformation fo find axis and point on axis
+  # correspoding to orignal data
+  Rot, DR1_, DR2_ = form_rotation_matrices(par[2:4])
+  Axis = np.transpose(Rot0)@np.transpose(Rot)@np.transpose(np.array([0, 0, 1])) # axis direction
+  Point = np.transpose(Rot0)@np.transpose(np.array([par[0], par[1], 0])) + np.transpose(cyl0['start']) # axis point
+
+  if Q != None:
+    if len(Q) > 5:
+      P = Q
+  H = P@Axis # Heights along the axis
+  hmin = np.min(H)
+  cyl['length'] = float(np.abs(np.max(H) - hmin))
+  hpoint = np.transpose(Axis)@Point
+  Point = Point - (hpoint- hmin)*Axis # axis point at the cylinder's bottom
+  cyl['start'] = np.transpose(Point).astype(float)
+  cyl['axis'] =  np.transpose(Axis).astype(float)
+  print(f"cyl['axis']: {cyl['axis']}")
+  print(f"cyl['start']: {cyl['start']}")
+  if weight != None and I != None:
+    I = (weight == np.max(weight))
+    cyl['mad'] = float(np.average(np.abs(dist(I)))) # mean ab
+  else:
+    cyl['mad'] = float(np.average(np.abs(dist))) # mean ab
+  cyl['conv'] = conv
+  cyl['rel'] = rel
+
+  # Compute SurfCov, minimum 3*8 grid
+  if ~np.any(np.isnan(Axis)) and ~np.any(np.isnan(Point)) and rel and conv:
+    numL = int(np.max((3, np.ceil(cyl['length']/res))))
+    numS = np.ceil(2*np.pi*cyl['radius']/res)
+    numS = int(np.min((36., np.max((numS,8)))))
+    surface_coverage(P,np.transpose(Axis),np.transpose(Point), numL, numS, 0.8*cyl['radius'])
+    exit()
+  
+  exit() 
 
   return 0, 1
