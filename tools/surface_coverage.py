@@ -86,20 +86,59 @@ def surface_coverage(P,Axis,Point,numL,numS,Dmin=None,Dmax=None):
     ## Compute SurfCov
     Cov = np.zeros((numL,numS))
     flat_Cov = Cov.ravel(order='F')
-    print(f"flat_Cov: {flat_Cov}")
-    print(f"Cov: {Cov}")
-    print(f"numL: {numL}")
-    print(f"numS: {numS}")
     flat_Cov[LexOrd -1] = 1
-    print(f"flat_Cov: {flat_Cov}")
     SurfCov[0,i] = np.count_nonzero(flat_Cov)/(1.*numL*numS)
   SurfCov =np.max(SurfCov)
-  print(SurfCov)
 
-    ## Compute volume estimate
+  ## Compute volume estimate
+
+  # Sort according to increasing lexicographic order
+  SortOrd = np.argsort(LexOrd)
+  LexOrd = LexOrd[SortOrd]
+  d = d[SortOrd]
 
 
-  exit()
+  # Compute mean distance of the sector-layer intersections
+  Dis = np.zeros((numL, numS)) # mean distances
+  numP = len(LexOrd) # number of points
+  p=0
+  while p <= numP-1:
+    t=1
+    while (p+t<= numP-1) and (LexOrd[p] == LexOrd[p+t]):
+      t+=1
+    flat_Dis = Dis.ravel(order='F')
+    flat_Dis[LexOrd[p] -1] = np.average(d[p:p+t-1+1])
+    Dis = flat_Dis.reshape(Dis.shape, order='F')
+    p+=t
+
+
+  # Interpolate missing distances
+  D = Dis
+  dis = Dis
+  Dinv = D[list(reversed(range(numL))), :]
+  D = np.concatenate((np.column_stack((Dinv, Dinv, Dinv)), np.column_stack((D, D, D)), np.column_stack((Dinv, Dinv, Dinv))))
+  Zero = (Dis == 0)
+  RadMean = np.average(Dis[Dis>0])
+
+  for i in range(numL):
+    for j in range(numS):
+      if Zero[i,j]:
+        if np.count_nonzero(D[i+numL-1-1:i+numL-1+1+1, j+numS -1-1:j+numS-1+1+1]) > 1:
+          d = D[i+numL-1-1:i+numL-1+1+1, j+numS -1-1:j+numS-1+1+1]
+          dis[i,j] = np.average(d[d>0])
+        if np.count_nonzero(D[i+numL-1-2:i+numL-1+2+1, j+numS -1-2:j+numS-1+2+1]) > 1:
+          d = D[i+numL-1-2:i+numL-1+2+1, j+numS -1-2:j+numS-1+2+1]
+          dis[i,j] = np.average(d[d>0])
+        if np.count_nonzero(D[i+numL-1-3:i+numL-1+3+1, j+numS -1-3:j+numS-1+3+1]) > 1:
+          d = D[i+numL-1-3:i+numL-1+3+1, j+numS -1-3:j+numS-1+3+1]
+          dis[i,j] = np.average(d[d>0])
+        else:
+          dis[i,j] = RadMean
+  # Compute the volume estimate
+  r = dis.ravel(order='F')
+  CylVol = 1000*np.pi*np.sum(r**2)/numS*Len/numL
+  return SurfCov, Dis, CylVol, dis
+
 
 
 

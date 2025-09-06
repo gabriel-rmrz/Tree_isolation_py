@@ -90,7 +90,8 @@ def least_squares_cylinder(P,cyl0,weight=None,Q=None, I=None):
   iter_ = 0
   conv = False # Did the iteration converge
   rel = True # Are the results reliable (condition number was not very bad)
-  if weight == None:
+  print(weight)
+  if np.any(weight == None):
     NoWeights = True
   else:
     NoWeights = False
@@ -152,7 +153,7 @@ def least_squares_cylinder(P,cyl0,weight=None,Q=None, I=None):
   Axis = np.transpose(Rot0)@np.transpose(Rot)@np.transpose(np.array([0, 0, 1])) # axis direction
   Point = np.transpose(Rot0)@np.transpose(np.array([par[0], par[1], 0])) + np.transpose(cyl0['start']) # axis point
 
-  if Q != None:
+  if np.any(Q != None):
     if len(Q) > 5:
       P = Q
   H = P@Axis # Heights along the axis
@@ -164,7 +165,7 @@ def least_squares_cylinder(P,cyl0,weight=None,Q=None, I=None):
   cyl['axis'] =  np.transpose(Axis).astype(float)
   print(f"cyl['axis']: {cyl['axis']}")
   print(f"cyl['start']: {cyl['start']}")
-  if weight != None and I != None:
+  if np.any(weight != None) and I != None:
     I = (weight == np.max(weight))
     cyl['mad'] = float(np.average(np.abs(dist(I)))) # mean ab
   else:
@@ -177,8 +178,13 @@ def least_squares_cylinder(P,cyl0,weight=None,Q=None, I=None):
     numL = int(np.max((3, np.ceil(cyl['length']/res))))
     numS = np.ceil(2*np.pi*cyl['radius']/res)
     numS = int(np.min((36., np.max((numS,8)))))
-    surface_coverage(P,np.transpose(Axis),np.transpose(Point), numL, numS, 0.8*cyl['radius'])
-    exit()
+    SurfCov, Dis_, CylVol_, dis_ = surface_coverage(P,np.transpose(Axis),np.transpose(Point), numL, numS, 0.8*cyl['radius'])
+
+    cyl['SurfCov'] = float(SurfCov)
+  else:
+    cyl['SurfCov'] = float(0)
+
+  return cyl
   
   exit() 
 

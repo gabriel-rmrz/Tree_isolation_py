@@ -91,7 +91,7 @@ def func_grad_cylinder(par,P,weight=None):
   yt = Pt[:,1]
   rt = np.sqrt(xt*xt +yt*yt)
   dist = rt - r # Distances to the cylinder surface
-  if weight != None:
+  if np.any(weight != None):
     dist = weight*dist
   
   # form the Jacobian matrix
@@ -118,7 +118,7 @@ def func_grad_cylinder(par,P,weight=None):
 
   J[:,4] = -1*np.ones(m)
 
-  if weight != None:
+  if np.any(weight != None):
     J = np.column_stack([weight*J[:,0], weight*J[:,1], weight*J[:,2], weight*J[:,3], weight*J[:,4]])
 
   return dist, J

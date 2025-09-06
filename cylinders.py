@@ -120,8 +120,11 @@ def cylinder_fitting(P, Points, Ind, numL, si):
     while i0 < numL - 3:
       ## Fit at least three cylinders of different lengths
       bot = Points[Ind[i0,0]:Ind[i0+1,1]+1]
+      print(f"bot: {bot}")
+      print(f"len(Points): {len(Points)}")
+      print(f"Ind[i0,0]: {Ind[i0,0]}")
+      print(f"Ind[i0+1,1]: {Ind[i0+1,1]}")
       Bot = np.average(P[bot,:], axis=0)
-      print(Bot)
       again = True
       j = 0
       c0={}
@@ -133,13 +136,19 @@ def cylinder_fitting(P, Points, Ind, numL, si):
         top = Points[Ind[i+j-1,0]:Ind[i+j,1]+1]
         Top = np.average(P[top,:], axis=0)
         Axis = Top-Bot
+        if DEBUG:
+          print(f"Axis: {Axis}")
+          print(f"Top: {Top}")
+          print(f"Bot: {Bot}")
+        if np.any(np.isnan(Axis).any() ):
+          exit()
         c0['axis'] = Axis/np.linalg.norm(Axis)
         #Compute the height along the axis
         if DEBUG:
           print(f"P.shape: {P.shape}")
           print(f"c0['axis'].shape: {c0['axis'].shape}")
           print(f"c0['axis']: {c0['axis']}")
-        h = np.dot(P[RegC,:]-Bot,np.transpose(c0['axis']))
+        h = (P[RegC,:]-Bot)@np.transpose(c0['axis'])
         if DEBUG:
           print(f"h: {h}")
         minh = np.min(h)
@@ -147,17 +156,17 @@ def cylinder_fitting(P, Points, Ind, numL, si):
         if j==0:
           Bot = Bot + minh*c0['axis']
           c0['start'] = Bot
-          h = np.dot(P[RegC,:] -Bot,c0['axis'])
+          h = (P[RegC,:] -Bot)@np.transpose(c0['axis'])
           if DEBUG:
             print(f"h: {h}")
           minh = np.min(h)
         if (i+j)>= numL-1:
-          ht = np.dot(Top-c0['start'],c0['axis'])
+          ht = (Top-c0['start'])@np.transpose(c0['axis'])
           if DEBUG:
             print(f"ht: {ht}")
           Top = Top + (np.max(h)-ht)*c0['axis']
         # Compute the height of the Top
-        ht = np.dot(Top-c0['start'], c0['axis'])
+        ht = (Top-c0['start'])@np.transpose(c0['axis'])
         if DEBUG:
           print(f"ht: {ht}")
           print(f"h: {h}")
@@ -214,10 +223,115 @@ def cylinder_fitting(P, Points, Ind, numL, si):
               c = least_squares_cylinder(Q0, c0, W, Q)
             else:
               c = least_squares_cylinder(Q0,c0)
+          else:
+            top = Points[Ind[i+j-3,0]:Ind[i+j-2,1]]
+            Top = np.average(P[top,:]) # Top axis point of the region
+            ht = (Top - CylTop)@np.transpose(c0['axis'])
+            h = (Q0-CylTop)@np.transpose(c0['axis'])
+            I1 = (h < 0) # the bottom
+            I2 = (h >= 0) & (h<=ht) # the section
+            I3 = (h > ht) # the top
+            print(I2)
+            Q = Q0[I2, :]
+            reg = reg[I2]
+            n1 = np.count_nonzero(I1)
+            n2 = len(Q)
+            n3= np.count_nonzero(I3)
+            if n2 > 9:
+              Q0 = np.concatenate((Q0[I1,:], Q, Q0[I3,:]))
+              W = np.concatenate((1/4*np.ones(n1), 2/4+np.ones(n2), 1/4*np.ones(n3)))
+              c = least_squares_cylinder(Q0, c0, W,Q)
+            else:
+              c = c0
+              c['rel'] = 0
+          if c['conv'] == 0:
+            c = c0
+            c['rel'] =0
+          if c['SurfCov'] < 0.2:
+            c['rel'] = 0
+        else:
+          c = c0
+          c['rel'] = 0
 
+        # Collect fit data
+        data[j,:] = np.array([c['rel'], c['conv'], c['SurfCov'], c['length']/c['radius']])
+        cyls[j] = c
+        regs[j] = reg
+        j+=1
+        # If reasonable cylinder fitted, then stop fitting new ones
+        # (but always fit at least cylinders)
+        RL = c['length']/c['radius'] # relative length of the cylinder
+        print(RL)
 
+        if again and c['rel'] and c['conv'] and RL >2:
+          if si == 1 and c['SurfCov'] > 0.7:
+            again= False
+          elif si > 1 and c['SurfCov'] > 0.5:
+            again = False
+      ## Select the best of the fitted cylinders
+      # based on maximum surface coverage
 
-        exit()
+      OKfit = (data[:j+1,0] & data[:j+1,1] & data[:j+1, 3] > 1.5)
+
+      J = np.transpose(np.array(range(j)))
+      t+=1
+      if np.any(OKfit):
+        J = J[OKfit]
+      I = np.argmax(data[J,2] - 0.01*data[J,3])
+      J = J[I]
+      c = cyls[J]
+
+      ## Update the indices of the layers for the next region:
+      CylTop = c['start'] + c['length']*c['axis']
+      i0+=1
+      bot = Points[Ind[i0,0]:Ind[i0,1]+1]
+      Bot = np.average(P[bot,:]) # Bottom axis point of the region
+      h = (Bot - CylTop)@np.transpose(c['axis'])
+      i00 = i0
+      while i0+1 < numL-1 and i0 < i00+5 and h < -c['radius']/3:
+        i0+=1
+        bot = Points[Ind[i0, 0]:Ind[i0+1,1]+1]
+        Bot = np.average(P[bot,:]) # Bottom axis point of the region
+        h = (Bot-CylTop)@np.transpose(c['axis'])
+      i = i0 + 5
+      i = np.min((i,numL-1))
+
+      ## If the next section is very short part of the end of the branch
+      # then simply increase the length of the current cylinder
+      if numL -1 - i0 +2 < 4:
+        reg = Points[Ind[numL-1-5, 0]: Ind[numL-1,1]+1]
+        Q0 = P[reg,:]
+        ht = (c['start'] + c['length']*c['axis'])@np.transpose(c['axis'])
+        h = Q0@np.transpose(c['axis'])
+        maxh = np.max(h)
+        if maxh > ht:
+          c['length'] = c['length'] + (maxh -ht)
+        i0 = numL -1
+      Reg[t] = regs[j-1]
+
+      if t == 1:
+        cyl = c
+        names = list(cyl.keys())
+        n = len(names)
+      else:
+        print(f"names: {names}")
+        print(f"c.keys(): {c.keys()}")
+        print(f"cyl.keys(): {cyl.keys()}")
+        print(f"c: {c}")
+        print(f"cyl: {cyl}")
+
+        for k in range(n):
+          print(f"k: {k}")
+          print(f"names[k]: {names[k]}")
+          cyl[names[k]] = np.concatenate((np.atleast_1d(cyl[names[k]]), np.atleast_1d(c[names[k]])))
+
+      
+      ## compute cylinder top for the definition of the next section
+      CylTop = c['start'] + c['length']*c['axis']
+    Reg = Reg[list(range(t))]
+    print(Reg)
+    exit()
+
 
 
   return 1,2 
@@ -289,7 +403,7 @@ def cylinders(P, cover, segment, inputs):
     si = SegmentIndex[k]
     if si > -1:
       ## Some initialization about the segment
-      Seg = Segs[k] # the current segment under analysis
+      Seg = Segs[si] # the current segment under analysis
       numL = len(Seg) # number of cover set layers in the segment
       Sets, IndSets = verticalcat(Seg) # the cover sets in the segment
 
@@ -298,11 +412,11 @@ def cylinders(P, cover, segment, inputs):
       numP = len(Points) # number of points in the segment
 
       # Determine indices of points for faster definition of regions
-      #BallSize = [ cs.size for s in Sets for cs in cover['ball'][s]]
+      #BallSize = [ np.size(cover['ball'][s]) for s in Sets ]
       BallSize = [ np.size(cover['ball'][s]) for s in Sets ]
       IndPoints = np.zeros((numL,2), dtype=int) # indices for points in each layer of the segment
       for j in range(numL):
-        IndPoints[j,1] = np.sum(BallSize[IndSets[j,0]:IndSets[j,1]+1])
+        IndPoints[j,1] = np.sum(BallSize[IndSets[j,0]:IndSets[j,1]])
       IndPoints[:,1] = np.cumsum(IndPoints[:,1])
       IndPoints[1:,0] = IndPoints[1:,0] + IndPoints[:-1, 1]
       Base = Seg[0] # the base of the segment
@@ -311,6 +425,7 @@ def cylinders(P, cover, segment, inputs):
       # Reconstruct only large enough segments
       if (numL > 1) and (numP > numB) and (numS > 2) and (numP > 20) and len(Base) > 0:
         cyl, Reg = cylinder_fitting(P, Points, IndPoints, numL, si)
+        exit()
 
       
 
