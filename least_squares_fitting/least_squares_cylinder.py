@@ -84,13 +84,11 @@ def least_squares_cylinder(P,cyl0,weight=None,Q=None, I=None):
   1) Bug fix: --> "Point = Rot0'*([par(1) par(2) 0]')..."
   '''
   ## Initialize data and values
-  print('Here')
   res = 0.03 # "Resolution level" for computing surface coverage
   maxiter = 50 # maximum number of Gauss-Newton iterations
   iter_ = 0
   conv = False # Did the iteration converge
   rel = True # Are the results reliable (condition number was not very bad)
-  print(weight)
   if np.any(weight == None):
     NoWeights = True
   else:
@@ -163,8 +161,6 @@ def least_squares_cylinder(P,cyl0,weight=None,Q=None, I=None):
   Point = Point - (hpoint- hmin)*Axis # axis point at the cylinder's bottom
   cyl['start'] = np.transpose(Point).astype(float)
   cyl['axis'] =  np.transpose(Axis).astype(float)
-  print(f"cyl['axis']: {cyl['axis']}")
-  print(f"cyl['start']: {cyl['start']}")
   if np.any(weight != None) and I != None:
     I = (weight == np.max(weight))
     cyl['mad'] = float(np.average(np.abs(dist(I)))) # mean ab
@@ -186,6 +182,3 @@ def least_squares_cylinder(P,cyl0,weight=None,Q=None, I=None):
 
   return cyl
   
-  exit() 
-
-  return 0, 1

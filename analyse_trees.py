@@ -71,7 +71,7 @@ def analyse_trees(P, inputs, cover, Trees, Segments):
   i_time = time.time() # Initial running time
   
   inputs['MinCylRad'] = 0.02
-  inputs['ParantCor'] = 0
+  inputs['ParentCor'] = 0
   inputs['TaperCor'] = 1
   Diam = np.zeros([numT,16], dtype=np.int32)
   segment = {}

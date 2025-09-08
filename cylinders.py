@@ -1,8 +1,10 @@
 DEBUG = True
 import numpy as np
 from tools.verticalcat import verticalcat
-from tools.surface_coverage_filtering import surface_coverage_filtering
-from least_squares_fitting.least_squares_cylinder import least_squares_cylinder
+from tools.cylinder_fitting import cylinder_fitting
+
+#from tools.surface_coverage_filtering import surface_coverage_filtering
+#from least_squares_fitting.least_squares_cylinder import least_squares_cylinder
 # This file is part of TREEQSM.
 #
 # TREEQSM is free software: you can redistribute it and/or modify
@@ -108,233 +110,108 @@ from least_squares_fitting.least_squares_cylinder import least_squares_cylinder
 #    in "regions"
 #
 
-def cylinder_fitting(P, Points, Ind, numL, si):
-  if numL > 6:
-    i0 = 0
-    i = 3 # indices of the first and las layers of the region
-    t = 0
-    Reg = {}
-    cyls = {}
-    regs = {}
-    data = np.zeros((11,4), dtype=int)
-    while i0 < numL - 3:
-      ## Fit at least three cylinders of different lengths
-      bot = Points[Ind[i0,0]:Ind[i0+1,1]+1]
-      print(f"bot: {bot}")
-      print(f"len(Points): {len(Points)}")
-      print(f"Ind[i0,0]: {Ind[i0,0]}")
-      print(f"Ind[i0+1,1]: {Ind[i0+1,1]}")
-      Bot = np.average(P[bot,:], axis=0)
-      again = True
-      j = 0
-      c0={}
-      #CylTop = c['start']+c['length']+c['axis']
-      while (i+j <=numL-1) and j<= 10 and (j<=2 or again):
-        ## Select points and estimate axis
-        RegC = Points[Ind[i0,0]:Ind[i+j,1]+1]  #candidate region
-        # Top axis point of the region:
-        top = Points[Ind[i+j-1,0]:Ind[i+j,1]+1]
-        Top = np.average(P[top,:], axis=0)
-        Axis = Top-Bot
-        if DEBUG:
-          print(f"Axis: {Axis}")
-          print(f"Top: {Top}")
-          print(f"Bot: {Bot}")
-        if np.any(np.isnan(Axis).any() ):
-          exit()
-        c0['axis'] = Axis/np.linalg.norm(Axis)
-        #Compute the height along the axis
-        if DEBUG:
-          print(f"P.shape: {P.shape}")
-          print(f"c0['axis'].shape: {c0['axis'].shape}")
-          print(f"c0['axis']: {c0['axis']}")
-        h = (P[RegC,:]-Bot)@np.transpose(c0['axis'])
-        if DEBUG:
-          print(f"h: {h}")
-        minh = np.min(h)
-        # Correct Bot to correspond to the real bottom
-        if j==0:
-          Bot = Bot + minh*c0['axis']
-          c0['start'] = Bot
-          h = (P[RegC,:] -Bot)@np.transpose(c0['axis'])
-          if DEBUG:
-            print(f"h: {h}")
-          minh = np.min(h)
-        if (i+j)>= numL-1:
-          ht = (Top-c0['start'])@np.transpose(c0['axis'])
-          if DEBUG:
-            print(f"ht: {ht}")
-          Top = Top + (np.max(h)-ht)*c0['axis']
-        # Compute the height of the Top
-        ht = (Top-c0['start'])@np.transpose(c0['axis'])
-        if DEBUG:
-          print(f"ht: {ht}")
-          print(f"h: {h}")
-        Sec = (h <= ht) & (h>=minh) # only points below the Top
-        c0['length'] = ht-minh # length of the region/cylinder
-        # The region for the cylinder fitting:
-        reg = RegC[Sec]
-        Q0 = P[reg,:]
-        
+def adjustments(cyl, parcyl, inputs, Regs):
+  numC = len(cyl['radius'])
+  Mod = np.zeros(numC)
+  SC = cyl['SurfCov']
 
-        ## Filter points and estimate radius
-        if len(Q0) > 20:
-          Keep, c0 = surface_coverage_filtering(Q0,c0, 0.02,20)
-          reg = reg[Keep]
-          Q0 = Q0[Keep,:]
-        else:
-          c0['radius'] = 0.01
-          c0['SurfCov'] = 0.05
-          c0['mad'] = 0.01
-          c0['conv'] = 1
-          c0['rel'] = 1
+  ## Determine the maximum and the minimum radius
+  # The maximum based on parent branch
 
-        ## Fit cylinder
-        if len(Q0) > 9:
-          if i >= numL-1 and t ==0:
-            c = least_squares_cylinder(Q0, c0)
-          elif i >=numL-1 and t>0:
-            h = (Q0 - CylTop)@np.transpose(c0['axis'])
-            I = h >= 0
-            Q = Q0[I,:] # the section
-            reg = reg[I]
-            n2 = len(Q)
-            n1 = np.count_nonzero(~I)
-            if (n2 > 9) and (n2 >5):
-              Q0 = np.concatenate((Q[~I,:],Q)) # the point cloud for cylinder fitting
-              W = np.concatenate((1/3*np.ones(n2), 2/3*np.ones(n1))) # the weights
-              c = least_squares_cylinder(Q0,c0,W,Q)
-            else:
-              c = least_squares_cylinder(Q0,c0)
-          elif t == 0:
-            top = Points[Ind[i+j-3,0]:Ind[i+j-2,1]+1]
-            Top = np.average(P[top,:])
-            ht = (Top-Bot)@np.transpose(c0['axis'])
-            h = (Q0-Bot)@np.transpose(c0['axis'])
-            I = (h<=ht)
-            Q = Q0[I,:] # the section
-            reg = reg[I]
-            n2 = len(Q)
-            n3 = np.count_nonzero(~I)
-            print(f"c0['radius']: {c0['radius']}")
-            if (n2 > 9) and (n3 > 5):
-              Q0 = np.concatenate((Q, Q0[I,:])) # the point cloud for cylinder fitting
-              W = np.concatenate((2/3*np.ones(n2), 1/3*np.ones(n3))) # the weights
-              c = least_squares_cylinder(Q0, c0, W, Q)
-            else:
-              c = least_squares_cylinder(Q0,c0)
-          else:
-            top = Points[Ind[i+j-3,0]:Ind[i+j-2,1]]
-            Top = np.average(P[top,:]) # Top axis point of the region
-            ht = (Top - CylTop)@np.transpose(c0['axis'])
-            h = (Q0-CylTop)@np.transpose(c0['axis'])
-            I1 = (h < 0) # the bottom
-            I2 = (h >= 0) & (h<=ht) # the section
-            I3 = (h > ht) # the top
-            print(I2)
-            Q = Q0[I2, :]
-            reg = reg[I2]
-            n1 = np.count_nonzero(I1)
-            n2 = len(Q)
-            n3= np.count_nonzero(I3)
-            if n2 > 9:
-              Q0 = np.concatenate((Q0[I1,:], Q, Q0[I3,:]))
-              W = np.concatenate((1/4*np.ones(n1), 2/4+np.ones(n2), 1/4*np.ones(n3)))
-              c = least_squares_cylinder(Q0, c0, W,Q)
-            else:
-              c = c0
-              c['rel'] = 0
-          if c['conv'] == 0:
-            c = c0
-            c['rel'] =0
-          if c['SurfCov'] < 0.2:
-            c['rel'] = 0
-        else:
-          c = c0
-          c['rel'] = 0
+  if np.size(parcyl['radius']>0):
+    MaxR = 0.95*parcyl['radius']
+    MaxR =np.max((MaxR, inputs['MinCylRad']))
+  else:
+    # use the maximum from the bottom cylinders
+    a = np.min((3,numC))
+    MaxR = 1.25*np.max(cyl['radius'][:a])
+  MinR = np.min((cyl['radius'][SC>0.7]))
+  if np.size(MinR)>0 and np.min(cyl['radius']) < MinR/2:
+    MinR = np.min(cyl['radius'][SC>0.4])
+  elif np.size(MinR) == 0:
+    MinR = np.min(cyl['radius'][SC>0.4])
+    if np.size(minR) == 0:
+      MinR = inputs['MinCylRad']
+  print(f"MinR: {MinR}")
+  
 
-        # Collect fit data
-        data[j,:] = np.array([c['rel'], c['conv'], c['SurfCov'], c['length']/c['radius']])
-        cyls[j] = c
-        regs[j] = reg
-        j+=1
-        # If reasonable cylinder fitted, then stop fitting new ones
-        # (but always fit at least cylinders)
-        RL = c['length']/c['radius'] # relative length of the cylinder
-        print(RL)
+  ## Check maximum and minimum radii
+  I = cyl['radius'] < MinR
+  cyl['radius'][I] = MinR
+  Mod[I] = True
+  print(inputs.keys())
+  if inputs['ParentCor'] or numC <=3:
+    I = (cyl['radius'] > MaxR & SC < 0.7) | (cyl['radius']> 1.2*MaxR)
+    cyl['radius'][I] = MarR
+    Mod[I] = True
 
-        if again and c['rel'] and c['conv'] and RL >2:
-          if si == 1 and c['SurfCov'] > 0.7:
-            again= False
-          elif si > 1 and c['SurfCov'] > 0.5:
-            again = False
-      ## Select the best of the fitted cylinders
-      # based on maximum surface coverage
+    # For short branches modify with more restrictions
+    if numC <=3:
+      I = ((cyl['radius'] > 0.75 * MaxR) & (SC <0.7))
+      if np.any(I):
+        r = np.max((SC[I]/0.7*cyl['radius'][I],MinR))
+        cyl['radius'][I] = r
+        Mod[I] = True
+  
+  ## Use taper correction to modify radius of too small and large cylinders
+  # Adjust radii if a small SurfCov and high SurfCov in the previus and 
+  # following cylinders
 
-      OKfit = (data[:j+1,0] & data[:j+1,1] & data[:j+1, 3] > 1.5)
+  for i in range(1,numC-1):
+    if (SC[i] < 0.7) and (SC[i-1] >= 0.7) and (SC[i+1] >= 0.7):
+      cyl['radius'][i] = 0.5 *(cyl['radius'][i-1] *cyl['radius'][i+1])
+      Mod[i] = True
+  
+  ## Use taper correction to modify radius of too small and large cylinders
+  if inputs['TaperCor']:
+    if np.max(cyl['radius']) < 0.001:
+      ## Adjust radii of thin branches to be linearly decreasing
+      if numC>2:
+        r = np.sort(cyl['radius'])
+        r =r[1:-1]
+        a = 2*np.mean(r)
+        if a > np.max(r):
+          a = np.min((0.01,np.max(r)))
+        b=np.min((0.5*np.min(cyl['radius']),0.001))
+        cyl['radius'] = np.linspace(a, b, numC)
+      elif numC >1:
+        r = np.max(cyl['radius'])
+        cyl['radius'] = np.column_stack((r, 0.5*r))
+      Mod = np.ones(numC, dtype=bool)
+    elif numC>4:
+      ## Parabola adjustment of maximum and minimum
+      # Define parabola taper shape as maximum (and minimum) radii for
+      # the cylinders with low surface coverage
 
-      J = np.transpose(np.array(range(j)))
-      t+=1
-      if np.any(OKfit):
-        J = J[OKfit]
-      I = np.argmax(data[J,2] - 0.01*data[J,3])
-      J = J[I]
-      c = cyls[J]
+      branchlen = np.sum(cyl['length'][:numC]) # branch length
+      L = cyl['length']/2+ np.concatenate(([0], np.cumsum(cyl['length'][:numC-1])))
+      print(f"L: {L}")
+      print(f"branchlen: {branchlen}")
+      Taper = np.concatenate((L, [branchlen]))
+      Taper = np.column_stack((Taper,np.concatenate((1.05*cyl['radius'], [MinR]))))
+      sc = np.concatenate((SC, [1]))
+      print('here')
+      exit()
 
-      ## Update the indices of the layers for the next region:
-      CylTop = c['start'] + c['length']*c['axis']
-      i0+=1
-      bot = Points[Ind[i0,0]:Ind[i0,1]+1]
-      Bot = np.average(P[bot,:]) # Bottom axis point of the region
-      h = (Bot - CylTop)@np.transpose(c['axis'])
-      i00 = i0
-      while i0+1 < numL-1 and i0 < i00+5 and h < -c['radius']/3:
-        i0+=1
-        bot = Points[Ind[i0, 0]:Ind[i0+1,1]+1]
-        Bot = np.average(P[bot,:]) # Bottom axis point of the region
-        h = (Bot-CylTop)@np.transpose(c['axis'])
-      i = i0 + 5
-      i = np.min((i,numL-1))
-
-      ## If the next section is very short part of the end of the branch
-      # then simply increase the length of the current cylinder
-      if numL -1 - i0 +2 < 4:
-        reg = Points[Ind[numL-1-5, 0]: Ind[numL-1,1]+1]
-        Q0 = P[reg,:]
-        ht = (c['start'] + c['length']*c['axis'])@np.transpose(c['axis'])
-        h = Q0@np.transpose(c['axis'])
-        maxh = np.max(h)
-        if maxh > ht:
-          c['length'] = c['length'] + (maxh -ht)
-        i0 = numL -1
-      Reg[t] = regs[j-1]
-
-      if t == 1:
-        cyl = c
-        names = list(cyl.keys())
-        n = len(names)
-      else:
-        print(f"names: {names}")
-        print(f"c.keys(): {c.keys()}")
-        print(f"cyl.keys(): {cyl.keys()}")
-        print(f"c: {c}")
-        print(f"cyl: {cyl}")
-
-        for k in range(n):
-          print(f"k: {k}")
-          print(f"names[k]: {names[k]}")
-          cyl[names[k]] = np.concatenate((np.atleast_1d(cyl[names[k]]), np.atleast_1d(c[names[k]])))
-
-      
-      ## compute cylinder top for the definition of the next section
-      CylTop = c['start'] + c['length']*c['axis']
-    Reg = Reg[list(range(t))]
-    print(Reg)
-    exit()
+      # Least square fitting of parabola to "Taper":
+      #A = np.concatenate(([np.sum(sc*Taper[:,0]**4)], [np.sum(sc*Taper[:,1]**2)], [np.sum(sc*Taper[:,1]*(
 
 
 
-  return 1,2 
+  
+  exit()
+
+
+
+  return cyl
+def parent_cylinder(SPar, SChi, CiS, cylinder, cyl, si):
+  # Finds the parent cylinder from the possible parent segment.
+  # Does this by checking it the axis of the cylinder, if continued, will
+  # cross the nearby cylinders in the parent segment.
+  # Adjust the cylinder so that it starts from the surface of its parent.
+
+  rad = cyl['radius']
+  return
 
 def cylinders(P, cover, segment, inputs):
   # Initialization of variables
@@ -343,8 +220,6 @@ def cylinders(P, cover, segment, inputs):
   SChi = segment['children']
   #NumOfSeg = np.max([len(s) for s in Segs])
   NumOfSeg = len(Segs) # number of segments
-  if DEBUG:
-    print(NumOfSeg)
   n = max(2000, min(NumOfSeg, 2e5))
   c = 1 # number of cylinders determined
   CChi = {}
@@ -365,38 +240,22 @@ def cylinders(P, cover, segment, inputs):
 
   ## Determine suitable order of segments (from trunk to the "youngest" child)
   bases = np.arange(NumOfSeg, dtype=int)
-  if DEBUG:
-    print(f"SChi: {SChi}")
-
-    print(f"SPar[:,0] == 0: {SPar[:,0] == 0}")
   bases = bases[SPar[:,0] == 0]
   numB = len(bases)
   SegmentIndex= np.zeros(NumOfSeg, dtype=int)
-  if DEBUG:
-    print(f"bases: {bases}")
-    print(f"len(bases): {len(bases)}")
-    print(f"SegmentIndex: {SegmentIndex}")
-    print(f"len(SegmentIndex): {len(SegmentIndex)}")
   numC = 0
   for i in range(numB):
     if numC == NumOfSeg:
       break
     numC = numC+1
     SegmentIndex[numC -1] = bases[i]
-    if DEBUG:
-      print(f"SegmentIndex(in for): {SegmentIndex}")
-      print(f"bases(in for): {bases}")
     S = [schi for schi in SChi[bases[i]] if schi != 0] #TODO: Look for a way to not include 0 as child.
     
     while S:
       n = len(S)
       SegmentIndex[numC-1+1:numC-1+n+1] = S
-      if DEBUG:
-        print(f"SegmentIndex(in while): {SegmentIndex}")
       numC+= n
       S = [schi for s in S if s != 0 for schi in SChi[s] ] #TODO: Look for a way to not include 0 as child.
-  if DEBUG:
-    print(f"SegmentIndex: {SegmentIndex}")
 
   ## Fit cylinders individually for each segment
   for k in range(NumOfSeg):
@@ -425,7 +284,35 @@ def cylinders(P, cover, segment, inputs):
       # Reconstruct only large enough segments
       if (numL > 1) and (numP > numB) and (numS > 2) and (numP > 20) and len(Base) > 0:
         cyl, Reg = cylinder_fitting(P, Points, IndPoints, numL, si)
-        exit()
+
+        numC = int(np.size(np.atleast_1d(cyl['radius'])))
+        print(numC)
+        print(si)
+
+        ## Search possible parent cylinder
+        if numC>0 and si > 0:
+          parent_cylinder(SPar,SChi,CiS, cylinder,cyl,si)
+
+        elif si == 0:
+          PC = []
+          added = False
+        else:
+          added = False
+        
+        cyl['radius0'] = cyl['radius']
+
+        ## Modify cylinders
+        if numC>0:
+          # Define parent cylinder
+          parcyl = {}
+          parcyl['radius'] = cylinder['radius'][PC]
+          parcyl['length'] = cylinder['length'][PC]
+          parcyl['start'] = cylinder['start'][PC]
+          parcyl['axis'] = cylinder['axis'][PC]
+          # Modify the cylinders
+          cyl = adjustments(cyl,parcyl,inputs,Reg)
+
+
 
       
 
