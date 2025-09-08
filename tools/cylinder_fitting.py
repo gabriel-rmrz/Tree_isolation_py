@@ -4,7 +4,7 @@ from least_squares_fitting.least_squares_cylinder import least_squares_cylinder
 
 
 def cylinder_fitting(P, Points, Ind, numL, si):
-  c0={}
+  #c0={}
   if numL > 6:
     i0 = 0
     i = 3 # indices of the first and las layers of the region
@@ -19,7 +19,7 @@ def cylinder_fitting(P, Points, Ind, numL, si):
       Bot = np.average(P[bot,:], axis=0)
       again = True
       j = 0
-      #c0={}
+      c0={}
       #CylTop = c['start']+c['length']+c['axis']
       while (i+j <=numL-1) and j<= 10 and (j<=2 or again):
         ## Select points and estimate axis
@@ -187,21 +187,26 @@ def cylinder_fitting(P, Points, Ind, numL, si):
         n = len(names)
       else:
         for k in range(n):
-          cyl[names[k]] = np.concatenate((np.atleast_1d(cyl[names[k]]), np.atleast_1d(c[names[k]])))
+          cyl[names[k]] = np.column_stack((np.atleast_1d(cyl[names[k]]), np.atleast_1d(c[names[k]])))
 
       
       ## compute cylinder top for the definition of the next section
       CylTop = c['start'] + c['length']*c['axis']
     Reg = {t_:Reg[t_] for t_ in range(t)}
+    for k in cyl.keys():
+      cyl[k] = np.transpose(cyl[k])
+      if np.min(np.shape(cyl[k])) == 1:
+        cyl[k] = np.ndarray.flatten(cyl[k])
   else:
+    c0 = {}
     ## Define the region for small segments
-    Q0 = P[Points,:]
+    Q0 = P[Points,:]#
     if len(Q0) > 10:
       ## Define the direction
       bot = Points[Ind[0,0]:Ind[0,1]]
-      Bot = np.average(P[bot,:])
+      Bot = np.average(P[bot,:],axis=0)
       top = Points[Ind[numL-1, 0]:Ind[numL-1,1]]
-      Top = np.average(P[top,:])
+      Top = np.average(P[top,:],axis=0)
       Axis = Top-Bot
       if np.any(np.isnan(Axis).any() ):
         print(f"Axis: {Axis}")
@@ -217,7 +222,7 @@ def cylinder_fitting(P, Points, Ind, numL, si):
       Reg = {}
       Reg[0] = Points[Keep]
       Q0 = Q0[Keep, :]
-      cyl = least_squares_cylinder[Q0, c0]
+      cyl = least_squares_cylinder(Q0, c0)
       if ~cyl['conv'] or ~cyl['rel']:
         cyl = c0
       t = 1
@@ -226,6 +231,5 @@ def cylinder_fitting(P, Points, Ind, numL, si):
       t = 0
   # Define Reg as coordinates
   Reg = {i: P[Reg[i],:] for i in range(t)}
-  print(f"Reg: {Reg}")
 
   return cyl, Reg

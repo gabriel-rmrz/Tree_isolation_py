@@ -159,8 +159,10 @@ def least_squares_cylinder(P,cyl0,weight=None,Q=None, I=None):
   cyl['length'] = float(np.abs(np.max(H) - hmin))
   hpoint = np.transpose(Axis)@Point
   Point = Point - (hpoint- hmin)*Axis # axis point at the cylinder's bottom
-  cyl['start'] = np.transpose(Point).astype(float)
-  cyl['axis'] =  np.transpose(Axis).astype(float)
+  #cyl['start'] = np.transpose(Point).astype(float)
+  #cyl['axis'] =  np.transpose(Axis).astype(float)
+  cyl['start'] = Point
+  cyl['axis'] =  Axis
   if np.any(weight != None) and I != None:
     I = (weight == np.max(weight))
     cyl['mad'] = float(np.average(np.abs(dist(I)))) # mean ab
