@@ -130,12 +130,18 @@ def adjustments(cyl, parcyl, inputs, Regs):
     # use the maximum from the bottom cylinders
     a = np.min((3,numC))
     MaxR = 1.25*np.max(cyl['radius'][:a])
-  MinR = np.min((cyl['radius'][SC>0.7]))
+  if np.sum(np.atleast_1d(SC)>0.7) > 0:
+    MinR = np.min((cyl['radius'][SC>0.7]))
+  else:
+    MinR = []
   if np.size(MinR)>0 and np.min(cyl['radius']) < MinR/2:
     MinR = np.min(cyl['radius'][SC>0.4])
   elif np.size(MinR) == 0:
-    MinR = np.min(cyl['radius'][SC>0.4])
-    if np.size(minR) == 0:
+    if np.sum(np.atleast_1d(SC)>0.4) > 0:
+      MinR = np.min(cyl['radius'][SC>0.4])
+    else:
+      MinR = []
+    if np.size(MinR) == 0:
       MinR = inputs['MinCylRad']
   
 
@@ -144,15 +150,15 @@ def adjustments(cyl, parcyl, inputs, Regs):
   cyl['radius'][I] = MinR
   Mod[I] = True
   if inputs['ParentCor'] or numC <=3:
-    I = (cyl['radius'] > MaxR & SC < 0.7) | (cyl['radius']> 1.2*MaxR)
-    cyl['radius'][I] = MarR
+    I = (np.atleast_1d(cyl['radius'] > MaxR) & np.atleast_1d(SC < 0.7)) | np.atleast_1d(cyl['radius']> 1.2*MaxR)
+    cyl['radius'][I] = MaxR
     Mod[I] = True
 
     # For short branches modify with more restrictions
     if numC <=3:
       I = ((cyl['radius'] > 0.75 * MaxR) & (SC <0.7))
       if np.any(I):
-        r = np.max((SC[I]/0.7*cyl['radius'][I],MinR))
+        r = np.max((np.atleast_1d(SC)[I]/0.7*np.atleast_1d(cyl['radius'])[I],MinR))
         cyl['radius'][I] = r
         Mod[I] = True
   
