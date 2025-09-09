@@ -3,9 +3,9 @@ import numpy as np
 from tools.verticalcat import verticalcat
 from tools.distances_to_line import distances_to_line
 from tools.surface_coverage2 import surface_coverage2
-from tools.cylinder_fitting import cylinder_fitting
 from tools.orthonormal_vectors import orthonormal_vectors
 from least_squares_fitting.least_squares_circle_centre import least_squares_circle_centre
+from tools.cylinder_fitting import cylinder_fitting
 
 #from tools.surface_coverage_filtering import surface_coverage_filtering
 #from least_squares_fitting.least_squares_cylinder import least_squares_cylinder
@@ -116,9 +116,12 @@ from least_squares_fitting.least_squares_circle_centre import least_squares_circ
 
 def adjustments(cyl, parcyl, inputs, Regs):
   cyl['radius'] = np.atleast_1d(cyl['radius'])
+  cyl['SurfCov'] = np.atleast_1d(cyl['SurfCov'])
+  cyl['length'] = np.atleast_1d(cyl['length'])
+  cyl['mad'] = np.atleast_1d(cyl['mad'])
+  SC = np.atleast_1d(cyl['SurfCov'])
   numC = np.size(cyl['radius'])
-  Mod = np.zeros(numC)
-  SC = cyl['SurfCov']
+  Mod = np.zeros(numC,dtype=bool)
 
   ## Determine the maximum and the minimum radius
   # The maximum based on parent branch
@@ -130,14 +133,14 @@ def adjustments(cyl, parcyl, inputs, Regs):
     # use the maximum from the bottom cylinders
     a = np.min((3,numC))
     MaxR = 1.25*np.max(cyl['radius'][:a])
-  if np.sum(np.atleast_1d(SC)>0.7) > 0:
+  if np.sum(SC>0.7) > 0:
     MinR = np.min((cyl['radius'][SC>0.7]))
   else:
     MinR = []
   if np.size(MinR)>0 and np.min(cyl['radius']) < MinR/2:
     MinR = np.min(cyl['radius'][SC>0.4])
   elif np.size(MinR) == 0:
-    if np.sum(np.atleast_1d(SC)>0.4) > 0:
+    if np.sum(SC>0.4) > 0:
       MinR = np.min(cyl['radius'][SC>0.4])
     else:
       MinR = []
@@ -150,7 +153,7 @@ def adjustments(cyl, parcyl, inputs, Regs):
   cyl['radius'][I] = MinR
   Mod[I] = True
   if inputs['ParentCor'] or numC <=3:
-    I = (np.atleast_1d(cyl['radius'] > MaxR) & np.atleast_1d(SC < 0.7)) | np.atleast_1d(cyl['radius']> 1.2*MaxR)
+    I = (np.atleast_1d(cyl['radius'] > MaxR) & (SC < 0.7)) | np.atleast_1d(cyl['radius']> 1.2*MaxR)
     cyl['radius'][I] = MaxR
     Mod[I] = True
 
@@ -158,7 +161,7 @@ def adjustments(cyl, parcyl, inputs, Regs):
     if numC <=3:
       I = ((cyl['radius'] > 0.75 * MaxR) & (SC <0.7))
       if np.any(I):
-        r = np.max((np.atleast_1d(SC)[I]/0.7*np.atleast_1d(cyl['radius'])[I],MinR))
+        r = np.max((SC[I]/0.7*np.atleast_1d(cyl['radius'])[I],np.atleast_1d(MinR)))
         cyl['radius'][I] = r
         Mod[I] = True
   
@@ -242,7 +245,7 @@ def adjustments(cyl, parcyl, inputs, Regs):
         a = np.sum(R*SC/np.sum(SC))
         b = np.min(R)
       Ru = np.transpose(np.linspace(a, b, numC))
-      I = ((SC < 0.7) & ~Mod)
+      I = ((SC < 0.7) & ~np.atleast_1d(Mod))
       cyl['radius'][I] = Ru[I] + (R[I] - Ru[I])*SC[I]/0.7
       Mod[I] = True
   
@@ -255,27 +258,30 @@ def adjustments(cyl, parcyl, inputs, Regs):
         Reg = Regs[i]
       elif i > 0:
         Reg = Regs[i-1]
-      if np.abs(cyl['radius'][i] - cyl['radius0'][i]) > 0.005 and ((numR == numC) or ((numR < numC) and (i > 0))):
+      cyl['start'] = np.atleast_2d(cyl['start'])
+      cyl['axis'] = np.atleast_2d(cyl['axis'])
+      if np.abs(cyl['radius'][i] - np.atleast_1d(cyl['radius0'])[i]) > 0.005 and ((numR == numC) or ((numR < numC) and (i > 0))):
         P = Reg - cyl['start'][i,:]
         U, V = orthonormal_vectors(cyl['axis'][i,:])
-        P = P@ np.concatenate((U, V))
+        P = P@ np.column_stack((U, V))
         cir = least_squares_circle_centre(P, np.array([0,0]), cyl['radius'][i])
         if cir['conv'] and cir['rel']:
-          cyl['start'][i,:] = cyl['start'][i,:] + cir['point'][0]@np.transpose(U) + cir['point'][1]@np.tranpose(V)
-          cyl['mad'][i,0] = cir['mad']
+          cyl['start'][i,:] = cyl['start'][i,:] + cir['point'][0]*np.transpose(U) + cir['point'][1]*np.transpose(V)
+          cyl['mad'][i] = cir['mad']
+
           d_, V, h, B_ = distances_to_line(Reg, cyl['axis'][i,:], cyl['start'][i,:])
           if np.min(h) < -0.001:
             cyl['length'][i] = np.max(h) - np.min(h)
             cyl['start'][i,:] = cyl['start'][i,:]+np.min(h)*cyl['axis'][i,:]
             d_, V, h, B_ = distances_to_line(Reg, cyl['axis'][i,:], cyl['start'][i,:])
           
-          a = np.max((0.02, 0.2*cyl['radius']))
+          a = np.max(np.concatenate(([0.02], 0.2*cyl['radius'])))
           numL = int(np.ceil(cyl['length'][i]/a))
           numL = np.max((numL, 4))
           numS = int(np.ceil(2*np.pi*cyl['radius'][i]/a))
           numS = np.max((numS, 10))
           numS = np.min((numS, 36))
-          cyl['SurfCov'][i,0] = surface_coverage2(cyl['axis'][i,:], cyl['length'][i],V,h,numL, numS)
+          cyl['SurfCov'][i] = surface_coverage2(cyl['axis'][i,:], cyl['length'][i],V,h,numL, numS)
   
 
   ## Continous branches
@@ -398,9 +404,6 @@ def cylinders(P, cover, segment, inputs):
       # Reconstruct only large enough segments
       if (numL > 1) and (numP > numB) and (numS > 2) and (numP > 20) and len(Base) > 0:
         cyl, Reg = cylinder_fitting(P, Points, IndPoints, numL, si)
-        print(f"np.shape(cyl['start']): {np.shape(cyl['start'])}")
-        print(f"np.shape(cyl['length']): {np.shape(cyl['length'])}")
-        print(f"np.shape(cyl['axis']): {np.shape(cyl['axis'])}")
 
         numC = int(np.size(np.atleast_1d(cyl['radius'])))
 

@@ -9,13 +9,13 @@ def surface_coverage2(Axis, Len, Vec, height, numL, numS):
   '''
 
   U, W = orthonormal_vectors(Axis)
-  Vec = Vec*np.column_stack((U,W))
-  ang = np.arctan2((Vec[:,1], Vec[:,0])) + np.pi
-  I = int(np.ceil(height/Len*numL))
+  Vec = Vec@np.column_stack((U,W))
+  ang = np.arctan2(Vec[:,1], Vec[:,0]) + np.pi
+  I = np.atleast_1d(np.ceil(height/Len*numL)).astype(int)
   I[I==0] = 1
   I[I>numL] = numL
-  J = int(np.ceil(ang/(2*np.pi)*numS))
+  J = np.atleast_1d(np.ceil(ang/(2*np.pi)*numS)).astype(int)
   J[J==0] = 1
   K = np.column_stack((I, J-1))@np.transpose(((1,numL)))
-  SurfCov = length(np.unique(K))/(numL*numS)
+  SurfCov = len(np.unique(K))/(numL*numS)
   return SurfCov
