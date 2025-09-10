@@ -178,6 +178,7 @@ def adjustments(cyl, parcyl, inputs, Regs):
   # Make cylinders properly "continuous" by moving the starting points
   # Move the starting point to the plane defined by parent cylinder's top
   if numC > 1:
+
     for j in range(1,numC):
       U = cyl['start'][j,:]-cyl['start'][j-1,:]-cyl['length'][j-1]*cyl['axis'][j-1,:]
       if np.linalg.norm(U) > 0.0001:

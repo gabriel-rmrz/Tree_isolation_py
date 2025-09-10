@@ -129,14 +129,12 @@ def parent_cylinder(SPar, SChi, CiS, cylinder, cyl, si):
   # PC:   Parent Cylinder
   numC = rad.size
   added = False
-  print(f"SPar[si]: {SPar[si]}")
   if len(SPar[si]) > 0: # parent segment exist, find parent cylinder
     s = SPar[si]
     PC = [CiS[s_] for s_ in s if s_ in CiS]  # the cylinders in the parent segment
     # select the closest cylinders for closer examination
     if len(PC) > 1:
       D = mat_vec_sumstraction(-cylinder['start'][Pc,:], -sta[1,:])
-      print(D)
       d = np.sum(D*D,1)
       if len(PC) > 3:
         I = I[:4]
@@ -333,13 +331,87 @@ def parent_cylinder(SPar, SChi, CiS, cylinder, cyl, si):
       # to the first cylinder is the most parallel
       # Add new cylinder
       pc = pc0
-      distances_between_lines(sta[0,:], axe[0,:], cylinder['start'][pc,:], cylinder['axis'][pc,:])
-      exit()
+      Dist, _, DistOnLines = distances_between_lines(sta[0,:], axe[0,:], cylinder['start'][pc,:], cylinder['axis'][pc,:])
+
+      I = (DistOnLines >=0)
+      J = (DistOnLines <= cylinder['length'][pc])
+      I = I & J
+      if not np.any(I):
+        I = DistOnLines >= -0.2*cylinder['length'][pc]
+        J = DistOnLines <= 1.2*cylinder['length'][pc]
+        I = I&J
+      if np.any(I):
+        pc = pc[I]
+        Dist = Dist[I]
+        DistOnLines = DistOnLines[I]
+        I = np.argmin(Dist)
+        DistOnLines = DistOnLines[I]
+        PC = pc[I]
+        Q = cylinder['start'][PC,:] + DistOnLines*cylinder['axis'][PC,:]
+        V = sta[0,:] - Q
+        L = np.linalg.norm(V) 
+        V = V/L
+        a = np.arccos(V@np.transpose(cylinder['axis'][PC,:]))
+        h = np.sin(a) * L
+        S = Q + cylinder['radius'][PC]/h*L*V
+        L = (h-cylinder['radius'][PC])/h*L
+        if L > 0.01 and L/len_[0] > 0.2:
+          numC = numC + 1
+          sta = np.concatenate((S, sta))
+          rad = np.concatenate(([rad[0]], rad))
+          axe = np.concatenate((V, axe))
+          len_ = np.concatenate(([L], len_))
+          cyl['mad'] = np.concatenate(([cyl['mad'][0]], cyl['mad']))
+          cyl['SurvCov'] = np.concatenate(([cyl['SurvCov'][0]], cyl['SurvCov']))
+          cyl['rel'] = np.concatenate(([cyl['rel'][0]], cyl['rel']))
+          cyl['conv'] = np.concatenate(([cyl['conv'][0]], cyl['conv']))
+          added = True
+      else:
+        V = - mat_vec_subtraction(cylinder['start'][pc,:], sta[0,:])
+        L0 = np.sqrt(np.sum(V*V, 1))
+        V = np.column_stack((V[:,0]/L0, V[:,1]/L0, V[:,2]/L0))
+        A = V@np.transpose(axe[0,:])
+        I = np.argmax(A)
+        A = A[I]
+        L1 = L0[I]
+        PC = pc[I]
+        V = V[I,:]
+        a = np.arccos(V@np.transpose(cylinder['axis'][PC,:]))
+        h = np.sin(a)*L1
+        S = cylinder['start'][PC,:]*cylinder['radius'][PC]/h*L1*V
+        L = (h-cylinder[PC])/h*L1
+        if L > 0.01 and L/len_[0] > 0.2:
+          numC = numC+1
+          sta = np.concatenate((S, sta))
+          rad = np.concatenate(([rad[0]], rad))
+          axe = np.concatenate((V, axe))
+          len_ = np.concatenate(([L], len_))
+          cyl['mad'] = np.concatenate(([cyl['mad'][0]], cyl['mad']))
+          cyl['SurvCov'] = np.concatenate(([cyl['SurvCov'][0]], cyl['SurvCov']))
+          cyl['rel'] = np.concatenate(([cyl['rel'][0]], cyl['rel']))
+          cyl['conv'] = np.concatenate(([cyl['conv'][0]], cyl['conv']))
+          added = True
+  else:
+    # no parent segment exist
+    PC = np.zeros((0,1))
+  
+  # define the output
+  cyl['radius'] = np.atleast_1d(np.atleast_1d(rad)[:numC])
+  cyl['length'] = np.atleast_1d(np.atleast_1d(len_)[:numC])
+  cyl['start'] = np.atleast_2d(np.atleast_2d(sta)[:numC,:])
+  cyl['axis'] = np.atleast_2d(np.atleast_2d(axe)[:numC,:])
+  cyl['mad'] = np.atleast_1d(np.atleast_1d(cyl['mad'])[:numC])
+  cyl['SurfCov'] = np.atleast_1d(np.atleast_1d(cyl['SurfCov'])[:numC])
+  cyl['conv'] = np.atleast_1d(np.atleast_1d(cyl['conv'])[:numC])
+  cyl['rel'] = np.atleast_1d(np.atleast_1d(cyl['rel'])[:numC])
+
+  return list(PC), cyl, added
 
 
 
 
-    #exit()
+
+
   return
 
 def cylinders(P, cover, segment, inputs):
@@ -417,16 +489,15 @@ def cylinders(P, cover, segment, inputs):
         numC = int(np.size(np.atleast_1d(cyl['radius'])))
 
         ## Search possible parent cylinder
-        print(f"numC: {numC}")
-        print(f"si: {si}")
         if numC>0 and si > 0:
-          parent_cylinder(SPar,SChi,CiS, cylinder,cyl,si)
-
+          PC, cyl, added = parent_cylinder(SPar,SChi,CiS, cylinder,cyl,si)
+         
         elif si == 0:
           PC = []
           added = False
         else:
           added = False
+
         
         cyl['radius0'] = cyl['radius']
 

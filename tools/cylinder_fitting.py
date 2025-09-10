@@ -70,13 +70,13 @@ def cylinder_fitting(P, Points, Ind, numL, si):
             c = least_squares_cylinder(Q0, c0)
           elif i >=numL-1 and t>0:
             h = (Q0 - CylTop)@np.transpose(c0['axis'])
-            I = h >= 0
+            I = (h >= 0)
             Q = Q0[I,:] # the section
             reg = reg[I]
             n2 = len(Q)
             n1 = np.count_nonzero(~I)
             if (n2 > 9) and (n2 >5):
-              Q0 = np.concatenate((Q[~I,:],Q)) # the point cloud for cylinder fitting
+              Q0 = np.concatenate((Q0[~I,:],Q)) # the point cloud for cylinder fitting
               W = np.concatenate((1/3*np.ones(n2), 2/3*np.ones(n1))) # the weights
               c = least_squares_cylinder(Q0,c0,W,Q)
             else:
