@@ -5,6 +5,7 @@ from tools.verticalcat import verticalcat
 from tools.adjustments import adjustments
 from tools.cylinder_fitting import cylinder_fitting
 from tools.mat_vec_subtraction import mat_vec_subtraction
+from tools.distances_between_lines import distances_between_lines
 
 #from tools.surface_coverage_filtering import surface_coverage_filtering
 #from least_squares_fitting.least_squares_cylinder import least_squares_cylinder
@@ -290,10 +291,55 @@ def parent_cylinder(SPar, SChi, CiS, cylinder, cyl, si):
         ParentFound = True
       else:
         PC = pc[I]
-        if numC > 1
+        if numC > 1 and X[0] <= rad[0] and np.abs(X[2]) <= 1.25 *cylinder['length'][PC]:
+          # removes the first cylinder and adjust the second
+          S = sta[0,:] + X[0]*axe[1,:]
+          V = sta[1,:] +len_[1]*axe[1,:]-S
+          len_[1] = np.linalg.norm(V)
+          len_ = len_[1:numC]
+          axe[1,:] = V/np.linalg.norm(V)
+          axe = axe[1:numC,:]
+          sta[1,:] = S
+          sta = sta[1:numC,:]
+          rad = rad[1:numC]
+          cyl['mad'] = cyl['mad'][1:numC]
+          cyl['SurfCov'] = cyl['SurfCov'][1:numC]
+          numC = numC-1
+          ParentFound = True
+        elif numC > 1:
+          # Remove first cylinder
+          sta = sta[1:numC,:]
+          len_ = len_[1:numC]
+          axe = axe[1:numC,:]
+          rad = rad[1:numC]
+          cyl['mad'] = cyl['mad'][1:numC]
+          cyl['SurfCov'] = cyl['SurfCov'][1:numC]
+          numC = numC-1
+        elif len(SChi[si]) == 0 :
+          # Remove the cylinder
+          numC = 0
+          PC = np.zeros((0,1))
+          ParentFound = True
+          rad = np.zeros((0,1))
+        elif X[0] <= rad[0] and np.abs(X[0]) <= 1.5*cylinder['length'][PC]:
+          # Adjust the cylinder
+          sta[0,:] = sta[0,:]+X[0]*axe[0,:]
+          len_[0] = np.abs(X[0])
+          ParentFound = True
+    if not ParentFound:
+      # The parent is the cylinder in the parent segment whose axis
+      # line is the closest to the axis line of the first cylinder
+      # Or the parent cylinder is the one whose base, when connected
+      # to the first cylinder is the most parallel
+      # Add new cylinder
+      pc = pc0
+      distances_between_lines(sta[0,:], axe[0,:], cylinder['start'][pc,:], cylinder['axis'][pc,:])
+      exit()
 
 
-    exit()
+
+
+    #exit()
   return
 
 def cylinders(P, cover, segment, inputs):
