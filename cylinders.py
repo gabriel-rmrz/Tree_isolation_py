@@ -213,8 +213,10 @@ def cylinders(P, cover, segment, inputs):
           parcyl['start'] = cylinder['start'][PC]
           parcyl['axis'] = cylinder['axis'][PC]
           # Modify the cylinders
+          print(f"c: cyl['radius']: {cyl['radius']}")
           cyl = adjustments(cyl,parcyl,inputs,Reg)
 
+          print(f"d: cyl['radius']: {cyl['radius']}")
         ## Save cylinders
         # if at least one acceptable cylinder, then save them
         Accept = (numC > 0) and np.min(cyl['radius'][:numC]) > 0
