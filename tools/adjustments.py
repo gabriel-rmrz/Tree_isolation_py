@@ -5,6 +5,7 @@ from tools.orthonormal_vectors import orthonormal_vectors
 from least_squares_fitting.least_squares_circle_centre import least_squares_circle_centre
 
 def adjustments(cyl, parcyl, inputs, Regs):
+  print(f"1: cyl['radius']: {cyl['radius']}")
   cyl['radius'] = np.atleast_1d(cyl['radius'])
   cyl['SurfCov'] = np.atleast_1d(cyl['SurfCov'])
   cyl['length'] = np.atleast_1d(cyl['length'])
@@ -18,7 +19,7 @@ def adjustments(cyl, parcyl, inputs, Regs):
 
   if np.size(parcyl['radius']>0):
     MaxR = 0.95*parcyl['radius']
-    MaxR =np.max((MaxR, inputs['MinCylRad']))
+    MaxR =np.maximum(MaxR, inputs['MinCylRad'])
   else:
     # use the maximum from the bottom cylinders
     a = np.min((3,numC))
@@ -41,9 +42,11 @@ def adjustments(cyl, parcyl, inputs, Regs):
   ## Check maximum and minimum radii
   I = cyl['radius'] < MinR
   cyl['radius'][I] = MinR
+  print(f"2: cyl['radius']: {cyl['radius']}")
   Mod[I] = True
   if inputs['ParentCor'] or numC <=3:
     I = (np.atleast_1d(cyl['radius'] > MaxR) & (SC < 0.7)) | np.atleast_1d(cyl['radius']> 1.2*MaxR)
+
     cyl['radius'][I] = MaxR
     Mod[I] = True
 
@@ -51,7 +54,7 @@ def adjustments(cyl, parcyl, inputs, Regs):
     if numC <=3:
       I = ((cyl['radius'] > 0.75 * MaxR) & (SC <0.7))
       if np.any(I):
-        r = np.max((SC[I]/0.7*np.atleast_1d(cyl['radius'])[I],np.atleast_1d(MinR)))
+        r = np.maximum(SC[I]/0.7*np.atleast_1d(cyl['radius'])[I],MinR)
         cyl['radius'][I] = r
         Mod[I] = True
   
@@ -75,10 +78,10 @@ def adjustments(cyl, parcyl, inputs, Regs):
         if a > np.max(r):
           a = np.min((0.01,np.max(r)))
         b=np.min((0.5*np.min(cyl['radius']),0.001))
-        cyl['radius'] = np.linspace(a, b, numC)
+        cyl['radius'] = np.transposed(np.linspace(a, b, numC))
       elif numC >1:
         r = np.max(cyl['radius'])
-        cyl['radius'] = np.column_stack((r, 0.5*r))
+        cyl['radius'] = np.concatenate((r, 0.5*r))
       Mod = np.ones(numC, dtype=bool)
     elif numC>4:
       ## Parabola adjustment of maximum and minimum
@@ -165,7 +168,7 @@ def adjustments(cyl, parcyl, inputs, Regs):
             cyl['start'][i,:] = cyl['start'][i,:]+np.min(h)*cyl['axis'][i,:]
             d_, V, h, B_ = distances_to_line(Reg, cyl['axis'][i,:], cyl['start'][i,:])
           
-          a = np.max(np.concatenate(([0.02], 0.2*cyl['radius'])))
+          a = np.maximum(0.02, 0.2*cyl['radius'])
           numL = int(np.ceil(cyl['length'][i]/a))
           numL = np.max((numL, 4))
           numS = int(np.ceil(2*np.pi*cyl['radius'][i]/a))

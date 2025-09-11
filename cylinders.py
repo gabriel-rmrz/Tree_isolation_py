@@ -188,7 +188,10 @@ def cylinders(P, cover, segment, inputs):
 
         ## Search possible parent cylinder
         if numC>0 and si > 0:
+          print(f"a: cyl['radius']: {cyl['radius']}")
+          print(f"a: cylinder['radius']: {cylinder['radius']}")
           PC, cyl, added = parent_cylinder(SPar,SChi,CiS, cylinder,cyl,si)
+          print(f"b: cyl['radius']: {cyl['radius']}")
          
         elif si == 0:
           PC = []
@@ -203,6 +206,8 @@ def cylinders(P, cover, segment, inputs):
         if numC>0:
           # Define parent cylinder
           parcyl = {}
+          print(f"PC: {PC}")
+          print(f"type(PC): {type(PC)}")
           parcyl['radius'] = cylinder['radius'][PC]
           parcyl['length'] = cylinder['length'][PC]
           parcyl['start'] = cylinder['start'][PC]
@@ -237,8 +242,8 @@ def cylinders(P, cover, segment, inputs):
           cylinder['length'][c:c+numC-1+1] = cyl['length'][:numC]
           cylinder['axis'][c:c+numC-1+1,:] = cyl['axis'][:numC,:]
           cylinder['start'][c:c+numC-1+1,:] = cyl['start'][:numC,:]
-          cylinder['parent'][c:c+numC-1+1] = np.array(np.linspace(c, c+numC-2, numC-1)) 
-          cylinder['extension'][c:c+numC-1+1] = np.array(np.linspace(c, c+numC-2, numC-1)) 
+          cylinder['parent'][c:c+numC-1+1] = np.array(np.linspace(c, c+numC-2, numC-1+1)) 
+          cylinder['extension'][c:c+numC-1+1] = np.array(np.linspace(c+1, c+numC-2, numC-1+1)) 
           cylinder['UnmodRadius'][c:c+numC-1+1] = cyl['radius0'][:numC]
           cylinder['SurfCov'][c:c+numC-1+1] = cyl['SurfCov'][:numC]
           cylinder['mad'][c:c+numC-1+1] = cyl['mad'][:numC]

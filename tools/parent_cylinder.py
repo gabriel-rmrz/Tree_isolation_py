@@ -293,4 +293,4 @@ def parent_cylinder(SPar, SChi, CiS, cylinder, cyl, si):
   cyl['conv'] = np.atleast_1d(np.atleast_1d(cyl['conv'])[:numC])
   cyl['rel'] = np.atleast_1d(np.atleast_1d(cyl['rel'])[:numC])
 
-  return list(PC), cyl, added
+  return np.ndarray.flatten(np.atleast_1d(PC)).astype(int).tolist(), cyl, added
