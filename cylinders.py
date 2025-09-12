@@ -188,10 +188,10 @@ def cylinders(P, cover, segment, inputs):
 
         ## Search possible parent cylinder
         if numC>0 and si > 0:
-          print(f"a: cyl['radius']: {cyl['radius']}")
+          #print(f"a: cyl['radius']: {cyl['radius']}")
           print(f"a: cylinder['radius']: {cylinder['radius']}")
           PC, cyl, added = parent_cylinder(SPar,SChi,CiS, cylinder,cyl,si)
-          print(f"b: cyl['radius']: {cyl['radius']}")
+          #print(f"b: cyl['radius']: {cyl['radius']}")
          
         elif si == 0:
           PC = []
@@ -206,17 +206,19 @@ def cylinders(P, cover, segment, inputs):
         if numC>0:
           # Define parent cylinder
           parcyl = {}
-          print(f"PC: {PC}")
-          print(f"type(PC): {type(PC)}")
+          #print(f"PC: {PC}")
+          #print(f"type(PC): {type(PC)}")
           parcyl['radius'] = cylinder['radius'][PC]
           parcyl['length'] = cylinder['length'][PC]
           parcyl['start'] = cylinder['start'][PC]
           parcyl['axis'] = cylinder['axis'][PC]
           # Modify the cylinders
-          print(f"c: cyl['radius']: {cyl['radius']}")
+          print(f"PC: {PC}")
+          print(f"parcyl['radius']: {parcyl['radius']}")
+          print(f"cyl['radius']: {cyl['radius']}")
+
           cyl = adjustments(cyl,parcyl,inputs,Reg)
 
-          print(f"d: cyl['radius']: {cyl['radius']}")
         ## Save cylinders
         # if at least one acceptable cylinder, then save them
         Accept = (numC > 0) and np.min(cyl['radius'][:numC]) > 0
@@ -296,6 +298,7 @@ def cylinders(P, cover, segment, inputs):
   
   # Growth volume correction
   if inputs['GrowthVolCor'] and c > -1:
+
     cylinder = growth_volume_correction(cylinder, inputs)
   
   return cylinder

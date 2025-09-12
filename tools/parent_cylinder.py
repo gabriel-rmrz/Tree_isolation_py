@@ -17,16 +17,24 @@ def parent_cylinder(SPar, SChi, CiS, cylinder, cyl, si):
   # PC:   Parent Cylinder
   numC = rad.size
   added = False
-  if len(SPar[si]) > 0: # parent segment exist, find parent cylinder
+  print(f"SPar[si]: {SPar[si]}")
+  if np.any(SPar[si] > 0): # parent segment exist, find parent cylinder
     s = SPar[si]
-    PC = [CiS[s_] for s_ in s if s_ in CiS]  # the cylinders in the parent segment
+    PC = np.concatenate([CiS[s_] for s_ in s if s_ in CiS]).astype(int).tolist() # the cylinders in the parent segment
     # select the closest cylinders for closer examination
+    print(f"HERE: PC: {PC}")
     if len(PC) > 1:
-      D = mat_vec_sumstraction(-cylinder['start'][Pc,:], -sta[1,:])
+      print(f"HERE: len(PC): {len(PC)}")
+      print(f"HERE: cylinder['start'].shape: {cylinder['start'].shape}")
+      print(f"HERE: sta.shape: {sta.shape}")
+      D = mat_vec_subtraction(-cylinder['start'][PC,:], -np.atleast_2d(sta)[0,:])
       d = np.sum(D*D,1)
+      I = np.argsort(d).astype(int).tolist()
       if len(PC) > 3:
         I = I[:4]
-      pc = PC[i]
+      print(f"HERE: I: {I}")
+      print(f"HERE: PC: {PC}")
+      pc = PC[I]
       ParentFound = False
     elif len(PC) ==1:
       ParentFound = True

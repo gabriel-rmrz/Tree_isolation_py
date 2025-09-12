@@ -5,7 +5,6 @@ from tools.orthonormal_vectors import orthonormal_vectors
 from least_squares_fitting.least_squares_circle_centre import least_squares_circle_centre
 
 def adjustments(cyl, parcyl, inputs, Regs):
-  print(f"1: cyl['radius']: {cyl['radius']}")
   cyl['radius'] = np.atleast_1d(cyl['radius'])
   cyl['SurfCov'] = np.atleast_1d(cyl['SurfCov'])
   cyl['length'] = np.atleast_1d(cyl['length'])
@@ -42,7 +41,6 @@ def adjustments(cyl, parcyl, inputs, Regs):
   ## Check maximum and minimum radii
   I = cyl['radius'] < MinR
   cyl['radius'][I] = MinR
-  print(f"2: cyl['radius']: {cyl['radius']}")
   Mod[I] = True
   if inputs['ParentCor'] or numC <=3:
     I = (np.atleast_1d(cyl['radius'] > MaxR) & (SC < 0.7)) | np.atleast_1d(cyl['radius']> 1.2*MaxR)
