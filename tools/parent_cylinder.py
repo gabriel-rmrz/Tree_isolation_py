@@ -9,24 +9,24 @@ def parent_cylinder(SPar, SChi, CiS, cylinder, cyl, si):
   # cross the nearby cylinders in the parent segment.
   # Adjust the cylinder so that it starts from the surface of its parent.
 
-  rad = cyl['radius']
-  len_ = cyl['length']
-  sta = cyl['start']
-  axe = cyl['axis']
+  cyl['mad'] = np.atleast_1d(cyl['mad'])
+  cyl['rel'] = np.atleast_1d(cyl['rel'])
+  cyl['conv'] = np.atleast_1d(cyl['conv'])
+  cyl['SurfCov'] = np.atleast_1d(cyl['SurfCov'])
+  rad = np.atleast_1d(cyl['radius'])
+  len_ = np.atleast_1d(cyl['length'])
+  sta = np.atleast_2d(cyl['start'])
+  axe = np.atleast_2d(cyl['axis'])
 
   # PC:   Parent Cylinder
   numC = rad.size
   added = False
-  print(f"SPar[si]: {SPar[si]}")
   if np.any(SPar[si] > 0): # parent segment exist, find parent cylinder
     s = SPar[si]
     PC = np.concatenate([CiS[s_] for s_ in s if s_ in CiS]).astype(int).tolist() # the cylinders in the parent segment
     # select the closest cylinders for closer examination
-    print(f"HERE: PC: {PC}")
     if len(PC) > 1:
       print(f"HERE: len(PC): {len(PC)}")
-      print(f"HERE: cylinder['start'].shape: {cylinder['start'].shape}")
-      print(f"HERE: sta.shape: {sta.shape}")
       D = mat_vec_subtraction(-cylinder['start'][PC,:], -np.atleast_2d(sta)[0,:])
       d = np.sum(D*D,1)
       I = np.argsort(d).astype(int).tolist()
@@ -34,7 +34,7 @@ def parent_cylinder(SPar, SChi, CiS, cylinder, cyl, si):
         I = I[:4]
       print(f"HERE: I: {I}")
       print(f"HERE: PC: {PC}")
-      pc = PC[I]
+      pc = [PC[i_] for i_ in I]
       ParentFound = False
     elif len(PC) ==1:
       ParentFound = True
@@ -54,8 +54,11 @@ def parent_cylinder(SPar, SChi, CiS, cylinder, cyl, si):
       Sta = cylinder['start'][pc,:]
       for j in range(n):
         # Crossing point solver from a quadratic equation
-        A = axe[0,:]-(axe[0,:]@np.transpose(Axe[j,:]))@Axe[j,:]
-        B = sta[0,:]-Sta[j,:]-(sta[0,:]*np.transpose(Axe[j,:]))@Axe[j,:]+(Sta[j,:]@np.transpose(Axe[j,:]))@Axe[j,:]
+        print(f"axe.shape: {axe.shape}")
+        print(f"Axe.shape: {Axe.shape}")
+
+        A = axe[0,:]-(axe[0,:]@np.transpose(Axe[j,:]))*Axe[j,:]
+        B = sta[0,:]-Sta[j,:]-(sta[0,:]*np.transpose(Axe[j,:]))*Axe[j,:]+(Sta[j,:]@np.transpose(Axe[j,:]))*Axe[j,:]
 
         e = A@np.transpose(A)
         f = 2*A@np.transpose(B)
@@ -74,7 +77,7 @@ def parent_cylinder(SPar, SChi, CiS, cylinder, cyl, si):
       
       ## Extend to crossing point in the (extended) parent
       I = (x[:,0] != 0) # Select only candidates with crossing points
-      pc = pc0[I]
+      pc = [pc0[i_] for i_ in I]
       x = x[I,:]
       h = h[I,:]
       j = 0
@@ -190,23 +193,23 @@ def parent_cylinder(SPar, SChi, CiS, cylinder, cyl, si):
           S = sta[0,:] + X[0]*axe[1,:]
           V = sta[1,:] +len_[1]*axe[1,:]-S
           len_[1] = np.linalg.norm(V)
-          len_ = len_[1:numC]
+          len_ = np.atleast_1d(len_[1:numC])
           axe[1,:] = V/np.linalg.norm(V)
           axe = axe[1:numC,:]
           sta[1,:] = S
           sta = sta[1:numC,:]
           rad = rad[1:numC]
-          cyl['mad'] = cyl['mad'][1:numC]
+          cyl['mad'] = np.atleast_1d(cyl['mad'][1:numC])
           cyl['SurfCov'] = cyl['SurfCov'][1:numC]
           numC = numC-1
           ParentFound = True
         elif numC > 1:
           # Remove first cylinder
           sta = sta[1:numC,:]
-          len_ = len_[1:numC]
+          len_ = np.atleast_1d(len_[1:numC])
           axe = axe[1:numC,:]
           rad = rad[1:numC]
-          cyl['mad'] = cyl['mad'][1:numC]
+          cyl['mad'] = np.atleast_1d(cyl['mad'][1:numC])
           cyl['SurfCov'] = cyl['SurfCov'][1:numC]
           numC = numC-1
         elif len(SChi[si]) == 0 :
@@ -231,13 +234,14 @@ def parent_cylinder(SPar, SChi, CiS, cylinder, cyl, si):
 
       I = (DistOnLines >=0)
       J = (DistOnLines <= cylinder['length'][pc])
+
       I = I & J
       if not np.any(I):
         I = DistOnLines >= -0.2*cylinder['length'][pc]
         J = DistOnLines <= 1.2*cylinder['length'][pc]
         I = I&J
       if np.any(I):
-        pc = pc[I]
+        pc = [pc[i_] for i_ in range(len(I)) if I[i_]]
         Dist = Dist[I]
         DistOnLines = DistOnLines[I]
         I = np.argmin(Dist)
@@ -251,14 +255,14 @@ def parent_cylinder(SPar, SChi, CiS, cylinder, cyl, si):
         h = np.sin(a) * L
         S = Q + cylinder['radius'][PC]/h*L*V
         L = (h-cylinder['radius'][PC])/h*L
-        if L > 0.01 and L/len_[0] > 0.2:
+        if L > 0.01 and L/np.atleast_1d(len_)[0] > 0.2:
           numC = numC + 1
-          sta = np.concatenate((S, sta))
+          sta = np.concatenate((np.atleast_2d(S), sta))
           rad = np.concatenate(([rad[0]], rad))
-          axe = np.concatenate((V, axe))
-          len_ = np.concatenate(([L], len_))
+          axe = np.concatenate((np.atleast_2d(V), axe))
+          len_ = np.concatenate((np.atleast_1d(L), len_))
           cyl['mad'] = np.concatenate(([cyl['mad'][0]], cyl['mad']))
-          cyl['SurvCov'] = np.concatenate(([cyl['SurvCov'][0]], cyl['SurvCov']))
+          cyl['SurfCov'] = np.concatenate(([cyl['SurfCov'][0]], cyl['SurfCov']))
           cyl['rel'] = np.concatenate(([cyl['rel'][0]], cyl['rel']))
           cyl['conv'] = np.concatenate(([cyl['conv'][0]], cyl['conv']))
           added = True
@@ -275,15 +279,19 @@ def parent_cylinder(SPar, SChi, CiS, cylinder, cyl, si):
         a = np.arccos(V@np.transpose(cylinder['axis'][PC,:]))
         h = np.sin(a)*L1
         S = cylinder['start'][PC,:]*cylinder['radius'][PC]/h*L1*V
-        L = (h-cylinder[PC])/h*L1
-        if L > 0.01 and L/len_[0] > 0.2:
+
+        L = (h-cylinder['radius'][PC])/h*L1
+
+        if L > 0.01 and L/np.atleast_1d(len_)[0] > 0.2:
           numC = numC+1
-          sta = np.concatenate((S, sta))
+          print(f"S.shape: {S.shape}")
+          print(f"sta.shape: {sta.shape}")
+          sta = np.concatenate((np.atleast_2d(S), sta))
           rad = np.concatenate(([rad[0]], rad))
-          axe = np.concatenate((V, axe))
-          len_ = np.concatenate(([L], len_))
-          cyl['mad'] = np.concatenate(([cyl['mad'][0]], cyl['mad']))
-          cyl['SurvCov'] = np.concatenate(([cyl['SurvCov'][0]], cyl['SurvCov']))
+          axe = np.concatenate((np.atleast_2d(V), axe))
+          len_ = np.concatenate((np.atleast_1d(L), len_))
+          cyl['mad'] = np.atleast_1d(np.concatenate(([cyl['mad'][0]], cyl['mad'])))
+          cyl['SurfCov'] = np.concatenate(([cyl['SurfCov'][0]], cyl['SurfCov']))
           cyl['rel'] = np.concatenate(([cyl['rel'][0]], cyl['rel']))
           cyl['conv'] = np.concatenate(([cyl['conv'][0]], cyl['conv']))
           added = True

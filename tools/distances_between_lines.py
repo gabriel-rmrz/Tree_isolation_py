@@ -24,7 +24,7 @@ def distances_between_lines(PointRay,DirRay,PointLines,DirLines):
   N = np.column_stack((1/l*N[:,0], 1/l*N[:,1], 1/l*N[:,2]))
 
   # Calculate the distances between the lines
-  A = -mat_vec_subtracion(PointLines, PointRay)
+  A = -mat_vec_subtraction(PointLines, PointRay)
   DistLines = np.sqrt(np.abs(np.sum(A*N,1))) # distances between the lines and the ray
 
   # Calculate the distances on ray and on lines

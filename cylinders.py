@@ -225,7 +225,11 @@ def cylinders(P, cover, segment, inputs):
         if Accept:
           # If the parent cylinder exist, set the parent-child ralations
           if len(PC) > 0:
-            cylinder['parent'][c] = PC
+            print(f"cylinder['parent']: {cylinder['parent']}")
+            print(f"PC: {PC}")
+            print(f"c: {c}")
+
+            cylinder['parent'][c] = PC[0]
             if cylinder['extension'][PC] == c:
               I = cylinder.branch[PC]
               cylinder['branch'][c:c+numC-1+1] = I
@@ -234,7 +238,10 @@ def cylinders(P, cover, segment, inputs):
                 CiS[i_] = np.vstack((CiS[i_], np.transpose(np.linspace(c, c+numC-1,numC))))
             else:
               for i_ in PC:
-                CChi[i_] = np.vstack((CChi[i_], [c]))
+                if i_ not in CChi:
+                  CChi[i_] = np.atleast_1d(c)
+                else:
+                  CChi[i_] = np.concatenate((CChi[i_], np.atleast_1d(c)))
               cylinder['branch'][c:c+numC-1+1] = si
               for i_ in np.atleast_1d(si):
                 CiS[i_] = np.transpose(np.linspace(c, c+numC-1, numC))
@@ -256,10 +263,11 @@ def cylinders(P, cover, segment, inputs):
           c += numC # number of cylinders so far
   c -= 1 # number of cylinders
   # Define outputs
-  names = cylinder.keys()
+  names = list(cylinder.keys())
   n = len(names)
   for k in range(n):
     cylinder[names[k]] = cylinder[names[k]][:c].astype(float)
+  print(f"c: {c}")
   if c <= 2^16:
     cylinder['parent'] = cylinder['parent'].astype(np.uint16)
     cylinder['extension'] = cylinder['extension'].astype(np.uint16)
@@ -268,14 +276,15 @@ def cylinders(P, cover, segment, inputs):
   if numB <= 2^8:
     cylinder['branch'] = cylinder['branch'].astype(np.uint8)
   if numB <= 2^16:
-    cylinder['branch'] = cylinder['branch'].astype(np.uint1)
+    cylinder['branch'] = cylinder['branch'].astype(np.uint16)
   cylinder['added'] = cylinder['added'].astype(bool)
 
   # Define the branching order
-  BOrd = np.zeros(c+1)
-  for i in range(c+1):
+  BOrd = np.zeros(c)
+  for i in range(c):
     if cylinder['parent'][i] > 0:
-      p = cylinder['parent'][i]
+      p = int(cylinder['parent'][i])
+      print(f"p: {p}")
       if cylinder['extension'][p] == i:
         BOrd[i] = BOrd[p]
       else:
@@ -286,10 +295,12 @@ def cylinders(P, cover, segment, inputs):
   #Define the cylinder position inside the branch
   PiB = np.ones(c)
   for i in range(NumOfSeg):
+    print(f"CiS.keys(): {CiS.keys()}")
+    print(f"NumOfSeg: {NumOfSeg}")
     C = np.atleast_1d(CiS[i])
     if len(C) > 0:
       n = len(C)
-      PiB = np.tranpose(np.array(range(n)))
+      PiB = np.transpose(np.array(range(n)))
   
   if np.max(PiB) <= 2^8:
     cylinder['PositionInBranch'] = PiB.astype(np.uint8)

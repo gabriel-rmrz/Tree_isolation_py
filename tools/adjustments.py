@@ -198,9 +198,14 @@ def adjustments(cyl, parcyl, inputs, Regs):
 
   ## Connect far away first cylinder to the parent
   if len(parcyl['radius']) >0:
+    print(f"cyl['start'][0,:]: {cyl['start'][0,:]}")
+    print(f"np.ndarray.flatten(parcyl['axis']): {np.ndarray.flatten(parcyl['axis'])}")
+    print(f"np.ndarray.flatten(parcyl['start']): {np.ndarray.flatten(parcyl['start'])}")
     d, V, h, B = distances_to_line(cyl['start'][0,:], parcyl['axis'], parcyl['start'])
     d =  d-parcyl['radius']
-    if d > 0.001:
+    print(f"d: {d}")
+    print(f"V: {V}")
+    if np.all(d > 0.001):
       taper = cyl['start'][0,:]
       E = taper+cyl['length'][0]*cyl['axis'][0,:]
       V = parcyl['radius']*V/np.linalg.norm(V)
