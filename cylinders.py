@@ -189,10 +189,7 @@ def cylinders(P, cover, segment, inputs):
 
         ## Search possible parent cylinder
         if numC>0 and si > 0:
-          #print(f"a: cyl['radius']: {cyl['radius']}")
-          print(f"a: cylinder['radius']: {cylinder['radius']}")
           PC, cyl, added = parent_cylinder(SPar,SChi,CiS, cylinder,cyl,si)
-          #print(f"b: cyl['radius']: {cyl['radius']}")
          
         elif si == 0:
           PC = []
@@ -207,16 +204,11 @@ def cylinders(P, cover, segment, inputs):
         if numC>0:
           # Define parent cylinder
           parcyl = {}
-          #print(f"PC: {PC}")
-          #print(f"type(PC): {type(PC)}")
           parcyl['radius'] = cylinder['radius'][PC]
           parcyl['length'] = cylinder['length'][PC]
           parcyl['start'] = cylinder['start'][PC]
           parcyl['axis'] = cylinder['axis'][PC]
           # Modify the cylinders
-          print(f"PC: {PC}")
-          print(f"parcyl['radius']: {parcyl['radius']}")
-          print(f"cyl['radius']: {cyl['radius']}")
 
           cyl = adjustments(cyl,parcyl,inputs,Reg)
 
@@ -226,9 +218,6 @@ def cylinders(P, cover, segment, inputs):
         if Accept:
           # If the parent cylinder exist, set the parent-child ralations
           if len(PC) > 0:
-            print(f"cylinder['parent']: {cylinder['parent']}")
-            print(f"PC: {PC}")
-            print(f"c: {c}")
 
             cylinder['parent'][c] = PC[0]
             if cylinder['extension'][PC] == c:
@@ -268,7 +257,6 @@ def cylinders(P, cover, segment, inputs):
   n = len(names)
   for k in range(n):
     cylinder[names[k]] = cylinder[names[k]][:c].astype(float)
-  print(f"c: {c}")
   if c <= 2^16:
     cylinder['parent'] = cylinder['parent'].astype(np.uint16)
     cylinder['extension'] = cylinder['extension'].astype(np.uint16)
@@ -285,7 +273,6 @@ def cylinders(P, cover, segment, inputs):
   for i in range(c):
     if cylinder['parent'][i] > 0:
       p = int(cylinder['parent'][i])
-      print(f"p: {p}")
       if cylinder['extension'][p] == i:
         BOrd[i] = BOrd[p]
       else:
@@ -296,8 +283,6 @@ def cylinders(P, cover, segment, inputs):
   #Define the cylinder position inside the branch
   PiB = np.ones(c)
   for i in range(len(CiS.keys())):
-    print(f"CiS.keys(): {CiS.keys()}")
-    print(f"NumOfSeg: {NumOfSeg}")
     C = np.atleast_1d(CiS[i])
     if len(C) > 0:
       n = len(C)
@@ -309,8 +294,10 @@ def cylinders(P, cover, segment, inputs):
     cylinder['PositionInBranch'] = PiB.astype(np.uint16)
   
   # Growth volume correction
+  '''
   if inputs['GrowthVolCor'] and c > -1:
 
     cylinder = growth_volume_correction(cylinder, inputs)
+  '''
   
   return cylinder

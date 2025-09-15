@@ -26,14 +26,11 @@ def parent_cylinder(SPar, SChi, CiS, cylinder, cyl, si):
     PC = np.concatenate([CiS[s_] for s_ in s if s_ in CiS]).astype(int).tolist() # the cylinders in the parent segment
     # select the closest cylinders for closer examination
     if len(PC) > 1:
-      print(f"HERE: len(PC): {len(PC)}")
       D = mat_vec_subtraction(-cylinder['start'][PC,:], -np.atleast_2d(sta)[0,:])
       d = np.sum(D*D,1)
       I = np.argsort(d).astype(int).tolist()
       if len(PC) > 3:
         I = I[:4]
-      print(f"HERE: I: {I}")
-      print(f"HERE: PC: {PC}")
       pc = [PC[i_] for i_ in I]
       ParentFound = False
     elif len(PC) ==1:
@@ -54,8 +51,6 @@ def parent_cylinder(SPar, SChi, CiS, cylinder, cyl, si):
       Sta = cylinder['start'][pc,:]
       for j in range(n):
         # Crossing point solver from a quadratic equation
-        print(f"axe.shape: {axe.shape}")
-        print(f"Axe.shape: {Axe.shape}")
 
         A = axe[0,:]-(axe[0,:]@np.transpose(Axe[j,:]))*Axe[j,:]
         B = sta[0,:]-Sta[j,:]-(sta[0,:]*np.transpose(Axe[j,:]))*Axe[j,:]+(Sta[j,:]@np.transpose(Axe[j,:]))*Axe[j,:]
@@ -284,8 +279,6 @@ def parent_cylinder(SPar, SChi, CiS, cylinder, cyl, si):
 
         if L > 0.01 and L/np.atleast_1d(len_)[0] > 0.2:
           numC = numC+1
-          print(f"S.shape: {S.shape}")
-          print(f"sta.shape: {sta.shape}")
           sta = np.concatenate((np.atleast_2d(S), sta))
           rad = np.concatenate(([rad[0]], rad))
           axe = np.concatenate((np.atleast_2d(V), axe))

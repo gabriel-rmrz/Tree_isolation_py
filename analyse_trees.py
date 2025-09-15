@@ -79,8 +79,12 @@ def analyse_trees(P, inputs, cover, Trees, Segments):
   for i in range(numT):
     if Model[i] and len(Segments[i]):
       segment = Segments[i] 
-
       cyls = cylinders(P, cover, segment, inputs)
+      Rad = cyls['radius'].astype(float)
+      Len = cyls['length'].astype(float)
+
+      initial_volume = np.round(1000*np.pi*np.sum(Rad**2*Len))
+      print(f" Computed volume (L) for tree {i}: {initial_volume}")
 
 
   f_time = time.time()
