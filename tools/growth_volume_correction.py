@@ -3,7 +3,7 @@ from scipy.optimize import curve_fit
 
 
 def allometry(x,xdata):
-  return x[0]*xdata**x[2]+x[3]]
+  return x[0]*xdata**x[2]+x[3]
 
 def growth_volume_correction(cylinder,inputs):
   '''
@@ -66,19 +66,33 @@ def growth_volume_correction(cylinder,inputs):
   
   ## Compute the growth volume
   GrowthVol = np.zeros(n) # growth volume
-  S = [ len(CChi[k]) for k in CChi.keys()]
+  S = np.array([ len(CChi[k]) for k in CChi.keys()])
+  print(f"S: {S}")
   modify = (S == 0)
   GrowthVol[modify] = np.pi*Rad[modify]**2*Len[modify]
-  parents = np.unique(CPar[modify])
+  print(f"CChi.keys(): {CChi.keys()}")
+  print(f"modify: {modify}")
+  parents = np.unique(CPar[modify]).astype(int)
+  print(f"1: parents: {parents}")
   if parents[0] ==0:
     parents = parents[1:]
   
+  print(f"2: parents: {parents}")
+  print(f"2: Rad: {Rad}")
+  print(f"2: Len: {Len}")
+  print(f"2: type(parents): {type(parents)}")
+  print(f"2: type(Rad): {type(Rad)}")
+  print(f"2: type(Len): {type(Len)}")
+  print(f"2: CPar: {CPar}")
+  exit()
+
   while len(parents)>0:
     V = np.pi*Rad[parents]**2*Len[parents]
     m = len(parents)
     for i in range(m):
       GrowthVol[parents[i]] = V[i]+np.sum(GrowthVol[CChi[parents[i]]])
-    parents = np.unique(CPar[parents])
+    parents = np.unique(CPar[parents]).astype(int)
+    print(f"2: parents: {parents}")
     if parents[0]==0:
       parents = parents[1:]
   
@@ -88,4 +102,3 @@ def growth_volume_correction(cylinder,inputs):
   print(f"popt: {popt}")
   print(f"pcov: {pcov}")
   exit()
-X = popt

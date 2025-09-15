@@ -4,6 +4,7 @@ from tools.verticalcat import verticalcat
 from tools.adjustments import adjustments
 from tools.cylinder_fitting import cylinder_fitting
 from tools.parent_cylinder import parent_cylinder
+from tools.growth_volume_correction import growth_volume_correction
 
 #from tools.surface_coverage_filtering import surface_coverage_filtering
 #from least_squares_fitting.least_squares_cylinder import least_squares_cylinder
@@ -294,7 +295,7 @@ def cylinders(P, cover, segment, inputs):
 
   #Define the cylinder position inside the branch
   PiB = np.ones(c)
-  for i in range(NumOfSeg):
+  for i in range(len(CiS.keys())):
     print(f"CiS.keys(): {CiS.keys()}")
     print(f"NumOfSeg: {NumOfSeg}")
     C = np.atleast_1d(CiS[i])

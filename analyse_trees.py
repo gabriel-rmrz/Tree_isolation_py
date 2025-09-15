@@ -73,6 +73,7 @@ def analyse_trees(P, inputs, cover, Trees, Segments):
   inputs['MinCylRad'] = 0.02
   inputs['ParentCor'] = 0
   inputs['TaperCor'] = 1
+  inputs['GrowthVolCor'] = 1
   Diam = np.zeros([numT,16], dtype=np.int32)
   segment = {}
   for i in range(numT):
